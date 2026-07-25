@@ -171,26 +171,14 @@
         }
 
         @keyframes pulse-urgent {
-            0% {
-                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
         }
         @keyframes pulse-target {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.6);
-            }
-            70% {
-                box-shadow: 0 0 0 12px rgba(255, 193, 7, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.6); }
+            70% { box-shadow: 0 0 0 12px rgba(255, 193, 7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
         }
         .item-card.is-urgent:not(.completed),
         .special-action-immediately {
@@ -309,12 +297,8 @@
             border-radius: 50%;
             display: inline-block;
         }
-        .dot-ets {
-            background-color: var(--ets-color);
-        }
-        .dot-tst {
-            background-color: var(--tst-color);
-        }
+        .dot-ets { background-color: var(--ets-color); }
+        .dot-tst { background-color: var(--tst-color); }
 
         .btn-custom {
             border-radius: 20px;
@@ -464,25 +448,25 @@
             }
         }
 
-/* 全屏圖片 Modal 優化 */
-#stationTelephoneModal .modal-fullscreen {
-    padding: 0;
-}
-#stationTelephoneModal .modal-content {
-    background: #000;
-    border: none;
-    border-radius: 0;
-    height: 100vh;
-}
-#stationTelephoneModal .modal-body {
-    padding: 0;
-    background: #000;
-}
-#stationTelephoneModal img {
-    max-height: 100vh;
-    width: auto;
-    object-fit: contain;
-}
+        /* 全屏圖片 Modal 優化 */
+        #stationTelephoneModal .modal-fullscreen {
+            padding: 0;
+        }
+        #stationTelephoneModal .modal-content {
+            background: #000;
+            border: none;
+            border-radius: 0;
+            height: 100vh;
+        }
+        #stationTelephoneModal .modal-body {
+            padding: 0;
+            background: #000;
+        }
+        #stationTelephoneModal img {
+            max-height: 100vh;
+            width: auto;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
@@ -519,6 +503,7 @@
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#calendar-tab"><i class="fas fa-calendar-alt"></i> 交更事項一覽</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#event-tab"><i class="fas fa-list-alt"></i> Station Event Log</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#fault-tab"><i class="fas fa-tools"></i> Fault Record</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#meeting-tab" onclick="resetMeetingView()"><i class="fas fa-handshake"></i> ETS Meeting Room Booking</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#links-tab"><i class="fas fa-link"></i> Useful Links</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#phone-tab"><i class="fas fa-address-book"></i> 常用電話簿</a></li>
             <li class="nav-item"><a class="nav-link" id="setup-tab-link" href="#setup-tab" onclick="checkPasswordAndGoToSetup(event)"><i class="fas fa-cogs"></i> Data Setup</a></li>
@@ -533,6 +518,7 @@
                     <button class="btn btn-custom btn-add" onclick="openModal('handoverModal')"><i class="fas fa-plus-circle"></i> 新增交更事項</button>
                     <button class="btn btn-custom btn-outline-secondary bg-white" onclick="openModal('noteModal')"><i class="fas fa-sticky-note"></i> 新增注意事項</button>
                     <button class="btn btn-custom btn-warning text-dark" onclick="openModal('specialModal')"><i class="fas fa-bullhorn"></i> 新增特別事項 / 全體注意</button>
+                    <button class="btn btn-custom text-white" style="background-color: #20c997;" onclick="openModal('meetingModal')"><i class="fas fa-handshake"></i> 新增 Meeting Room Booking</button>
                 </div>
 
                 <div class="row mb-4">
@@ -541,6 +527,13 @@
                             <span><i class="fas fa-bullhorn text-danger"></i> 特別事項 / 官方資訊 / 全體注意</span>
                         </div>
                         <div id="special-notes-list" class="d-flex flex-column gap-2"></div>
+                    </div>
+                    
+                    <div class="col-12 mt-4">
+                        <div class="station-header mb-3 d-flex justify-content-between align-items-center text-dark shadow-sm" style="background-color: #d1e7dd; font-size: 1.3rem; letter-spacing: 1px;">
+                            <span><i class="fas fa-handshake text-success"></i> ETS Meeting Room Booking (今日預約)</span>
+                        </div>
+                        <div id="today-meeting-list" class="d-flex flex-column gap-2"></div>
                     </div>
                 </div>
 
@@ -584,10 +577,7 @@
                     <button class="btn btn-outline-primary" onclick="changeMonth(1)">下個月 <i class="fas fa-chevron-right"></i></button>
                 </div>
                 <div class="calendar-grid">
-                    <div class="row g-0 calendar-header-row">
-                        <div class="col">日</div><div class="col">一</div><div class="col">二</div><div class="col">三</div><div class="col">四</div><div class="col">五</div><div class="col">六</div>
-                    </div>
-                    <div id="calendar-grid" class="row g-0"></div>
+                    <div id="calendar-grid" class="row g-0 mt-2"></div>
                 </div>
             </div>
 
@@ -648,8 +638,17 @@
                     <table class="table table-custom table-hover">
                         <thead>
                             <tr>
-                                <th style="width: 8%;">車站</th>
-                                <th style="width: 10%;">日期</th>
+                                <th style="width: 10%;">
+                                    <div class="d-flex flex-column align-items-start">
+                                        <span>車站</span>
+                                        <select id="fault-station-filter" class="form-select form-select-sm mt-1 border-secondary" style="font-weight: normal; background-color: #f8f9fa;" onchange="renderFaults()">
+                                            <option value="">All</option>
+                                            <option value="ETS">ETS</option>
+                                            <option value="TST">TST</option>
+                                        </select>
+                                    </div>
+                                </th>
+                                <th style="width: 8%;">日期</th>
                                 <th style="width: 15%;">
                                     <div class="d-flex flex-column align-items-start">
                                         <span>Asset</span>
@@ -682,6 +681,52 @@
                 </div>
             </div>
 
+            <!-- ============ ETS Meeting Room Booking ============ -->
+            <div class="tab-pane fade" id="meeting-tab">
+                <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm flex-wrap gap-3">
+                    <h4 class="mb-0 text-dark fw-bold"><i class="fas fa-handshake text-success"></i> ETS Meeting Room Booking</h4>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-custom text-white shadow-sm" style="background-color: #20c997;" onclick="openModal('meetingModal')"><i class="fas fa-plus"></i> 新增 Meeting Room Booking</button>
+                        <button class="btn btn-outline-success shadow-sm" id="toggle-meeting-view-btn" onclick="toggleMeetingView()"><i class="fas fa-calendar-alt"></i> 以日曆形式顯示</button>
+                    </div>
+                </div>
+
+                <!-- Summary 視圖 -->
+                <div id="meeting-summary-view">
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 12%;">日期</th>
+                                    <th style="width: 15%;">時段</th>
+                                    <th style="width: 15%;">申請人</th>
+                                    <th style="width: 20%;">Email</th>
+                                    <th style="width: 15%;">申請目的</th>
+                                    <th style="width: 15%;">Remark</th>
+                                    <th style="width: 8%;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="meeting-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 日曆視圖 -->
+                <div id="meeting-calendar-view" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm flex-wrap gap-3">
+                        <button class="btn btn-outline-success" onclick="changeMeetingMonth(-1)"><i class="fas fa-chevron-left"></i> 上個月</button>
+                        <div class="d-flex flex-column align-items-center">
+                            <h3 id="meeting-calendar-month-year" class="mb-2 fw-bold text-dark"></h3>
+                            <input type="month" id="meeting-calendar-search-month" class="form-control form-control-sm text-center fw-bold text-success border-success" onchange="searchMeetingMonth()" style="max-width: 180px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05);" title="選擇指定月份">
+                        </div>
+                        <button class="btn btn-outline-success" onclick="changeMeetingMonth(1)">下個月 <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div id="meeting-calendar-grid" class="row g-0 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============ Useful Links ============ -->
             <div class="tab-pane fade" id="links-tab">
                 <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
@@ -691,13 +736,13 @@
                 <div class="row g-3" id="links-container"></div>
             </div>
 
-            <!-- ============ 常用電話簿 (新增 Station Telephone 按鈕) ============ -->
+            <!-- ============ 常用電話簿 ============ -->
             <div class="tab-pane fade" id="phone-tab">
                 <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
                     <h4 class="mb-0 text-dark fw-bold"><i class="fas fa-address-book text-success"></i> 常用電話簿</h4>
                     <div>
                         <button class="btn btn-success btn-custom me-2" onclick="openModal('phoneModal')"><i class="fas fa-plus"></i> 新增電話</button>
-                        <button class="btn btn-info btn-custom" onclick="showStationTelephone()"><i class="fas fa-phone"></i> Station Telephone</button>
+                        <button class="btn btn-info btn-custom text-white" onclick="showStationTelephone()"><i class="fas fa-phone"></i> Station Telephone</button>
                     </div>
                 </div>
                 <div id="phonebook-container"></div>
@@ -904,6 +949,7 @@
                     <div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-sticky-note"></i> 新增/修改 注意事項</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body">
                         <input type="hidden" id="note-id">
+                        <input type="hidden" id="note-order">
                         <input type="hidden" id="note-date">
                         <div class="mb-3">
                             <label class="form-label small fw-bold">車站</label>
@@ -954,6 +1000,38 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light"><button type="button" class="btn btn-warning px-4 rounded-pill fw-bold" onclick="saveSpecialNote()">儲存</button></div>
+                </div></div>
+        </div>
+
+        <!-- Meeting Booking Modal -->
+        <div class="modal fade" id="meetingModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow">
+                    <div class="modal-header text-white" style="background-color: #20c997;"><h5 class="modal-title"><i class="fas fa-handshake"></i> 新增/修改 Meeting Room Booking</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        <input type="hidden" id="mt-id">
+                        <div class="mb-3"><label class="form-label small fw-bold">日期</label><input type="date" id="mt-date" class="form-control form-control-sm"></div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6"><label class="form-label small fw-bold">時段 (由)</label><input type="time" id="mt-start" class="form-control form-control-sm"></div>
+                            <div class="col-6"><label class="form-label small fw-bold">時段 (到)</label><input type="time" id="mt-end" class="form-control form-control-sm"></div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6"><label class="form-label small fw-bold">申請人</label><input type="text" id="mt-applicant" class="form-control form-control-sm"></div>
+                            <div class="col-6"><label class="form-label small fw-bold">申請人 Email</label><input type="email" id="mt-email" class="form-control form-control-sm"></div>
+                        </div>
+                        <div class="mb-3"><label class="form-label small fw-bold">申請目的</label><input type="text" id="mt-purpose" class="form-control form-control-sm"></div>
+                        <div class="mb-2"><label class="form-label small fw-bold">Remark</label><textarea id="mt-remark" class="form-control form-control-sm" rows="2"></textarea></div>
+                    </div>
+                    <div class="modal-footer bg-light"><button type="button" class="btn text-white px-4 rounded-pill" style="background-color: #20c997;" onclick="saveMeeting()">儲存</button></div>
+                </div></div>
+        </div>
+
+        <!-- Meeting Day Calendar Detail Modal -->
+        <div class="modal fade" id="meetingDayModal" tabindex="-1">
+            <div class="modal-dialog modal-lg"><div class="modal-content border-0 shadow">
+                    <div class="modal-header text-white bg-success"><h5 class="modal-title fw-bold" id="meetingDayTitle"></h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body bg-light">
+                        <div id="meeting-day-list" class="px-2"></div>
+                    </div>
                 </div></div>
         </div>
 
@@ -1217,28 +1295,28 @@
             </div>
         </div>
 
-        <!-- ============ 新增：Station Telephone 彈窗 Modal ============ -->
         <!-- ============ 全屏 Station Telephone 圖片 Modal ============ -->
-<div class="modal fade" id="stationTelephoneModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen">
-        <div class="modal-content" style="background: #000; border: none;">
-            <div class="modal-header" style="border-bottom: none; position: absolute; top: 10px; right: 10px; z-index: 1050; background: transparent; border: 0;">
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="font-size: 2rem;"></button>
-            </div>
-            <div class="modal-body d-flex align-items-center justify-content-center p-0" style="background: #000;">
-                <img src="station%20telephone.png" alt="Station Telephone" class="img-fluid" style="max-height: 100vh; width: auto; object-fit: contain;" onerror="this.style.display='none'; document.getElementById('stationTelFallback').style.display='flex';">
-                <div id="stationTelFallback" style="display:none; flex-direction: column; align-items: center; justify-content: center; color: #fff; height: 100vh; width: 100%;">
-                    <i class="fas fa-image fa-4x mb-3"></i>
-                    <h4>無法載入圖片</h4>
-                    <p class="text-muted">請確認檔案「station telephone.png」是否存在於相同目錄。</p>
+        <div class="modal fade" id="stationTelephoneModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content" style="background: #000; border: none;">
+                    <div class="modal-header" style="border-bottom: none; position: absolute; top: 10px; right: 10px; z-index: 1050; background: transparent; border: 0;">
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="font-size: 2rem;"></button>
+                    </div>
+                    <div class="modal-body d-flex align-items-center justify-content-center p-0" style="background: #000;">
+                        <img src="station%20telephone.png" alt="Station Telephone" class="img-fluid" style="max-height: 100vh; width: auto; object-fit: contain;" onerror="this.style.display='none'; document.getElementById('stationTelFallback').style.display='flex';">
+                        <div id="stationTelFallback" style="display:none; flex-direction: column; align-items: center; justify-content: center; color: #fff; height: 100vh; width: 100%;">
+                            <i class="fas fa-image fa-4x mb-3"></i>
+                            <h4>無法載入圖片</h4>
+                            <p class="text-muted">請確認檔案「station telephone.png」是否存在於相同目錄。</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div><!-- end #main-app -->
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
-    </script>
+    </div><!-- end #main-app -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // ============================================================
         //  1. Firebase Configuration
@@ -1357,6 +1435,7 @@
             specialNotes: [],
             links: [],
             phonebook: [],
+            meetings: [], 
             setupTo: defaultSetupTo,
             setupDuty: defaultSetupDuty,
             setupMonthlyDuty: defaultSetupMonthlyDuty,
@@ -1373,6 +1452,10 @@
         let currentLogicalDateStr = getLogicalDateStr();
         let currentEventLogDateStr = getEventLogLogicalDateStr();
         let displayMonthDate = new Date();
+        
+        let isMeetingCalendarView = false;
+        let meetingDisplayMonth = new Date();
+
         let modals = {};
 
         // ============================================================
@@ -1436,40 +1519,7 @@
             "2027-05-13": "佛誕",
             "2027-06-09": "端午節",
             "2027-09-16": "中秋節翌日",
-            "2027-10-08": "重陽節",
-            "2028-01-26": "農曆年初一",
-            "2028-01-27": "農曆年初二",
-            "2028-01-28": "農曆年初三",
-            "2028-04-04": "清明節",
-            "2028-04-14": "耶穌受難節",
-            "2028-04-15": "耶穌受難節翌日",
-            "2028-04-17": "復活節星期一",
-            "2028-05-02": "佛誕",
-            "2028-05-28": "端午節",
-            "2028-10-04": "中秋節翌日",
-            "2028-10-26": "重陽節",
-            "2029-02-13": "農曆年初一",
-            "2029-02-14": "農曆年初二",
-            "2029-02-15": "農曆年初三",
-            "2029-03-30": "耶穌受難節",
-            "2029-03-31": "耶穌受難節翌日",
-            "2029-04-02": "復活節星期一",
-            "2029-04-04": "清明節",
-            "2029-05-21": "佛誕翌日",
-            "2029-06-16": "端午節",
-            "2029-09-23": "中秋節翌日",
-            "2029-10-16": "重陽節",
-            "2030-02-04": "農曆年初二",
-            "2030-02-05": "農曆年初三",
-            "2030-02-06": "農曆年初四",
-            "2030-04-05": "清明節",
-            "2030-04-19": "耶穌受難節",
-            "2030-04-20": "耶穌受難節翌日",
-            "2030-04-22": "復活節星期一",
-            "2030-05-09": "佛誕",
-            "2030-06-05": "端午節",
-            "2030-09-13": "中秋節翌日",
-            "2030-10-05": "重陽節"
+            "2027-10-08": "重陽節"
         };
 
         function getHKHoliday(dateStr, d) {
@@ -1516,7 +1566,9 @@
                 calDetail: new bootstrap.Modal(document.getElementById('calDetailModal')),
                 special: new bootstrap.Modal(document.getElementById('specialModal')),
                 link: new bootstrap.Modal(document.getElementById('linkModal')),
-                phone: new bootstrap.Modal(document.getElementById('phoneModal'))
+                phone: new bootstrap.Modal(document.getElementById('phoneModal')),
+                meeting: new bootstrap.Modal(document.getElementById('meetingModal')),
+                meetingDay: new bootstrap.Modal(document.getElementById('meetingDayModal'))
             };
 
             let dateSelectDuty = document.getElementById('setup-duty-date');
@@ -1586,6 +1638,12 @@
                         .data();
                     d.id = doc.id; return d; });
                 renderPhonebook(); });
+            
+            db.collection("meetingBookings").onSnapshot(snap => {
+                localData.meetings = snap.docs.map(doc => { let d = doc.data();
+                    d.id = doc.id; return d; });
+                renderAll(); 
+            });
 
             db.collection("setup").doc("to").onSnapshot(doc => { if (doc.exists) { localData.setupTo = doc.data();
                     renderAll(); } });
@@ -1683,12 +1741,14 @@
             renderHeader();
             renderCITService();
             renderSpecialNotes();
+            renderTodayMeetings();
             renderHandover();
             renderNotes();
             renderDuty();
             renderEventLog();
             renderCalendar();
             renderFaults();
+            renderMeetings();
             renderLinks();
             renderPhonebook();
             renderSetupTo();
@@ -1722,6 +1782,157 @@
                 `<span class="badge bg-danger shadow-sm px-2 py-1" style="font-size: 0.85rem; border: 1px solid #fff;"><i class="fas fa-times-circle"></i> ${str}</span>`;
             let citContainer = document.getElementById('cit-service-display');
             if (citContainer) citContainer.innerHTML = displayHTML;
+        }
+
+        // ---------- ETS Meeting Room Bookings ----------
+        function resetMeetingView() {
+            isMeetingCalendarView = false;
+            document.getElementById('meeting-summary-view').style.display = 'block';
+            document.getElementById('meeting-calendar-view').style.display = 'none';
+            document.getElementById('toggle-meeting-view-btn').innerHTML = '<i class="fas fa-calendar-alt"></i> 以日曆形式顯示';
+        }
+        
+        function toggleMeetingView() {
+            isMeetingCalendarView = !isMeetingCalendarView;
+            if (isMeetingCalendarView) {
+                document.getElementById('meeting-summary-view').style.display = 'none';
+                document.getElementById('meeting-calendar-view').style.display = 'block';
+                document.getElementById('toggle-meeting-view-btn').innerHTML = '<i class="fas fa-list"></i> 以 Summary 形式顯示';
+                renderMeetingCalendar();
+            } else {
+                resetMeetingView();
+            }
+        }
+
+        function renderMeetings() {
+            let tbody = document.getElementById('meeting-table-body');
+            if (!tbody) return;
+            
+            let sorted = [...localData.meetings].sort((a, b) => {
+                if (a.date !== b.date) return b.date.localeCompare(a.date);
+                return a.startTime.localeCompare(b.startTime);
+            });
+            
+            let html = '';
+            sorted.forEach(m => {
+                html += `
+                <tr>
+                    <td class="fw-bold text-secondary">${m.date}</td>
+                    <td class="fw-bold" style="color: #20c997;">${m.startTime} - ${m.endTime}</td>
+                    <td class="fw-bold">${m.applicant}</td>
+                    <td>${m.email}</td>
+                    <td>${m.purpose}</td>
+                    <td>${m.remark || '-'}</td>
+                    <td class="action-icons text-nowrap">
+                        <i class="fas fa-edit text-primary me-2" onclick="editMeeting('${m.id}')" title="編輯"></i>
+                        <i class="fas fa-trash text-danger" onclick="deleteItem('meetingBookings', '${m.id}')" title="刪除"></i>
+                    </td>
+                </tr>
+                `;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="7" class="text-center text-muted py-4"><i class="fas fa-handshake fa-2x mb-2 opacity-50"></i><br>目前無任何 Booking 紀錄</td></tr>';
+            
+            if (isMeetingCalendarView) {
+                renderMeetingCalendar();
+            }
+        }
+
+        function renderTodayMeetings() {
+            let list = document.getElementById('today-meeting-list');
+            if (!list) return;
+            
+            let todayBookings = localData.meetings.filter(m => m.date === currentViewingDateStr);
+            todayBookings.sort((a, b) => a.startTime.localeCompare(b.startTime));
+            
+            let html = '';
+            todayBookings.forEach(m => {
+                html += `
+                <div class="item-card bg-white interactive-card ${m.isCompleted ? 'completed' : ''}" style="border-left: 5px solid #20c997; margin-bottom: 10px; cursor: default;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center">
+                            <input class="form-check-input me-2 mt-0" type="checkbox" ${m.isCompleted ? 'checked' : ''} onchange="toggleComplete('meetingBookings', '${m.id}')">
+                            <span class="badge text-white shadow-sm" style="background-color: #20c997;"><i class="fas fa-clock"></i> ${m.startTime} - ${m.endTime}</span>
+                        </div>
+                        <div class="action-icons">
+                            <i class="fas fa-edit text-primary me-2" onclick="editMeeting('${m.id}')"></i>
+                            <i class="fas fa-trash text-danger" onclick="deleteItem('meetingBookings', '${m.id}')"></i>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <span class="fw-bold" style="color: #2c3e50;">${m.purpose}</span><br>
+                        <span class="text-muted small fw-bold">申請人: ${m.applicant} (${m.email})</span>
+                        ${m.remark ? `<br><span class="text-muted small bg-light px-2 py-1 rounded d-inline-block mt-1 border"><i class="fas fa-comment-dots"></i> Remark: ${m.remark}</span>` : ''}
+                    </div>
+                </div>
+                `;
+            });
+            
+            list.innerHTML = html || '<div class="text-center text-muted p-3 bg-white rounded shadow-sm"><i class="fas fa-calendar-times mb-2 opacity-50 fa-2x"></i><br>今日無 ETS Meeting Room Booking</div>';
+        }
+
+        function changeMeetingMonth(offset) {
+            meetingDisplayMonth.setMonth(meetingDisplayMonth.getMonth() + offset);
+            renderMeetingCalendar();
+        }
+        
+        function searchMeetingMonth() {
+            let input = document.getElementById('meeting-calendar-search-month').value;
+            if (input) {
+                let parts = input.split('-');
+                meetingDisplayMonth = new Date(parts[0], parts[1] - 1, 1);
+                renderMeetingCalendar();
+            }
+        }
+
+        function renderMeetingCalendar() {
+            let year = meetingDisplayMonth.getFullYear();
+            let month = meetingDisplayMonth.getMonth();
+            document.getElementById('meeting-calendar-month-year').innerText = `${year}年 ${month + 1}月`;
+            
+            let monthInput = document.getElementById('meeting-calendar-search-month');
+            if (monthInput) monthInput.value = `${year}-${String(month + 1).padStart(2, '0')}`;
+
+            let firstDay = new Date(year, month, 1).getDay();
+            let daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            let grid = document.getElementById('meeting-calendar-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="col calendar-day bg-light opacity-50"></div>`;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                let dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                let hasMeeting = localData.meetings.some(m => m.date === dStr);
+
+                grid.innerHTML += `
+                <div class="col calendar-day ${dStr===currentViewingDateStr ? 'today' : ''}" onclick="openMeetingDay('${dStr}')">
+                    <span class="day-num">${day}</span>
+                    <div class="dots-container">
+                        ${hasMeeting ? '<div class="dot" style="background-color: #20c997;" title="當日有 Booking"></div>' : ''}
+                    </div>
+                </div>`;
+            }
+        }
+
+        function openMeetingDay(dateStr) {
+            document.getElementById('meetingDayTitle').innerText = `${dateStr} Meeting Bookings`;
+            let dayMeetings = localData.meetings.filter(m => m.date === dateStr).sort((a, b) => a.startTime.localeCompare(b.startTime));
+            let html = '';
+            if (dayMeetings.length === 0) {
+                html = '<div class="text-center text-muted p-4"><i class="fas fa-folder-open fa-2x mb-2 opacity-50"></i><br>當日無預約紀錄</div>';
+            } else {
+                dayMeetings.forEach(m => {
+                    html += `
+                    <div class="item-card bg-white mb-2 shadow-sm" style="border-left: 5px solid #20c997;">
+                        <div class="fw-bold mb-1" style="color: #20c997;"><i class="fas fa-clock"></i> ${m.startTime} - ${m.endTime}</div>
+                        <div class="fw-bold text-dark mb-1">${m.purpose}</div>
+                        <div><span class="text-muted small fw-bold">申請人:</span> ${m.applicant} (${m.email})</div>
+                        ${m.remark ? `<div><span class="text-muted small fw-bold">備註:</span> <span class="text-secondary">${m.remark}</span></div>` : ''}
+                    </div>
+                    `;
+                });
+            }
+            document.getElementById('meeting-day-list').innerHTML = html;
+            modals.meetingDay.show();
         }
 
         // ---------- Special Notes ----------
@@ -1994,6 +2205,9 @@
 
             let buildHTML = (station) => {
                 let items = filtered.filter(n => n.station === station || n.station === 'TST and ETS');
+                // 根據 order 進行排序
+                items.sort((a, b) => (a.order || 0) - (b.order || 0));
+                
                 let html = '';
                 items.forEach(n => {
                     let pSetup = localData.setupPriority.find(p => p.name === n.priority) || { color: 'primary' };
@@ -2019,9 +2233,11 @@
                                 <span class="badge ${badgeClass} shadow-sm">${n.priority || 'Normal'}</span>
                                 ${dateBadge}
                             </div>
-                            <div class="action-icons" onclick="event.stopPropagation();">
-                                <i class="fas fa-edit" onclick="editNote('${n.id}')" title="編輯"></i>
-                                <i class="fas fa-trash" onclick="deleteItem('notes', '${n.id}')" title="刪除"></i>
+                            <div class="action-icons text-nowrap" onclick="event.stopPropagation();">
+                                <i class="fas fa-arrow-up text-secondary py-0 me-1" onclick="moveItem('notes', '${n.id}', -1)" title="上移"></i>
+                                <i class="fas fa-arrow-down text-secondary py-0 me-2" onclick="moveItem('notes', '${n.id}', 1)" title="下移"></i>
+                                <i class="fas fa-edit text-primary me-2" onclick="editNote('${n.id}')" title="編輯"></i>
+                                <i class="fas fa-trash text-danger" onclick="deleteItem('notes', '${n.id}')" title="刪除"></i>
                             </div>
                         </div>
                         <div class="card-content fw-bold">${n.content}</div>
@@ -2365,9 +2581,17 @@
             if (filterMonth) {
                 filtered = filtered.filter(f => f.date.startsWith(filterMonth));
             }
+            
+            let stationFilterElement = document.getElementById('fault-station-filter');
+            let stationFilter = stationFilterElement ? stationFilterElement.value : '';
 
             let assetFilterElement = document.getElementById('fault-asset-filter');
             let assetFilter = assetFilterElement ? assetFilterElement.value : '';
+            
+            if (stationFilter) {
+                filtered = filtered.filter(f => f.station === stationFilter);
+            }
+
             if (assetFilterElement) {
                 let uniqueAssets = [...new Set(filtered.map(f => (f.asset || '').trim()).filter(a => a !== ''))].sort();
                 let assetHTML = '<option value="">All Assets</option>';
@@ -2594,6 +2818,9 @@
         }
 
         function moveItem(type, id, direction) {
+            // 自動為未有 order 的項目加上預設值，避免出錯
+            localData[type].forEach((item, index) => { if (item.order === undefined) item.order = Date.now() + index; });
+            
             let arr = localData[type].sort((a, b) => a.order - b.order);
             let index = arr.findIndex(n => n.id === id);
             if (index < 0) return;
@@ -2627,6 +2854,7 @@
                 document.getElementById('ho-remark').value = '';
             } else if (modalId === 'noteModal') {
                 document.getElementById('note-id').value = '';
+                document.getElementById('note-order').value = Date.now();
                 document.getElementById('note-date').value = d;
                 document.getElementById('note-station').value = 'ETS';
                 updatePriorityDropdown();
@@ -2668,6 +2896,15 @@
                 document.getElementById('pb-department').value = '';
                 document.getElementById('phone-inputs-container').innerHTML = '';
                 addPhoneInputRow();
+            } else if (modalId === 'meetingModal') {
+                document.getElementById('mt-id').value = '';
+                document.getElementById('mt-date').value = d;
+                document.getElementById('mt-start').value = '';
+                document.getElementById('mt-end').value = '';
+                document.getElementById('mt-applicant').value = '';
+                document.getElementById('mt-email').value = '';
+                document.getElementById('mt-purpose').value = '';
+                document.getElementById('mt-remark').value = '';
             }
             modals[modalId.replace('Modal', '')].show();
         }
@@ -2783,8 +3020,10 @@
         function saveNote() {
             let id = document.getElementById('note-id').value || generateId();
             let dateVal = document.getElementById('note-date').value || currentViewingDateStr;
+            let orderVal = parseInt(document.getElementById('note-order').value) || Date.now();
             let item = {
                 id,
+                order: orderVal,
                 date: dateVal,
                 station: document.getElementById('note-station').value,
                 priority: document.getElementById('note-priority').value || 'Normal',
@@ -2795,6 +3034,7 @@
             let existing = localData.notes.find(i => i.id === id);
             if (existing) {
                 item.isCompleted = existing.isCompleted;
+                item.order = existing.order !== undefined ? existing.order : orderVal;
                 if (existing.completedDate) item.completedDate = existing.completedDate;
             }
             db.collection('notes').doc(id).set(item).then(() => modals.note.hide());
@@ -2804,6 +3044,7 @@
             let item = localData.notes.find(i => i.id === id);
             if (item) {
                 document.getElementById('note-id').value = item.id;
+                document.getElementById('note-order').value = item.order || Date.now();
                 document.getElementById('note-date').value = item.date;
                 document.getElementById('note-station').value = item.station;
                 updatePriorityDropdown();
@@ -2954,6 +3195,67 @@
                     addPhoneInputRow();
                 }
                 modals.phone.show();
+            }
+        }
+
+        // ---------- Save Meeting ----------
+        function saveMeeting() {
+            let id = document.getElementById('mt-id').value || generateId();
+            let date = document.getElementById('mt-date').value;
+            let startTime = document.getElementById('mt-start').value;
+            let endTime = document.getElementById('mt-end').value;
+            let applicant = document.getElementById('mt-applicant').value;
+            let email = document.getElementById('mt-email').value;
+            let purpose = document.getElementById('mt-purpose').value;
+            let remark = document.getElementById('mt-remark').value;
+
+            if (!date || !startTime || !endTime || !applicant) {
+                alert("請填寫所有必填欄位 (日期, 時段, 申請人)！");
+                return;
+            }
+            if (startTime >= endTime) {
+                alert("結束時間必須晚於開始時間！");
+                return;
+            }
+
+            // 檢查重疊 (Overlap logic)
+            let overlap = localData.meetings.some(m => {
+                if (m.id === id) return false; // 排除自己
+                if (m.date !== date) return false;
+                // 新時段的開始時間 < 舊時段的結束時間 且 新時段的結束時間 > 舊時段的開始時間
+                return (startTime < m.endTime) && (endTime > m.startTime);
+            });
+
+            if (overlap) {
+                alert("此時段與其他已存在的 Booking 重疊，請選擇其他時段！");
+                return;
+            }
+
+            let item = { id, date, startTime, endTime, applicant, email, purpose, remark };
+            let existing = localData.meetings.find(i => i.id === id);
+            
+            // 保持原有的 Complete 狀態
+            item.isCompleted = existing ? (existing.isCompleted || false) : false;
+
+            if (id && existing) {
+                db.collection('meetingBookings').doc(id).update(item).then(() => modals.meeting.hide());
+            } else {
+                db.collection('meetingBookings').doc(id).set(item).then(() => modals.meeting.hide());
+            }
+        }
+
+        function editMeeting(id) {
+            let item = localData.meetings.find(i => i.id === id);
+            if (item) {
+                document.getElementById('mt-id').value = item.id;
+                document.getElementById('mt-date').value = item.date;
+                document.getElementById('mt-start').value = item.startTime;
+                document.getElementById('mt-end').value = item.endTime;
+                document.getElementById('mt-applicant').value = item.applicant;
+                document.getElementById('mt-email').value = item.email || '';
+                document.getElementById('mt-purpose').value = item.purpose || '';
+                document.getElementById('mt-remark').value = item.remark || '';
+                modals.meeting.show();
             }
         }
 
@@ -3522,9 +3824,8 @@
             }
         }
 
-        // ---------- 新增：顯示 Station Telephone 圖片 ----------
+        // ---------- 顯示 Station Telephone 圖片 ----------
         function showStationTelephone() {
-            // 每次點擊都重新獲取 Modal 實例，避免狀態問題
             let modal = new bootstrap.Modal(document.getElementById('stationTelephoneModal'));
             modal.show();
         }
