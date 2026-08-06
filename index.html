@@ -518,20 +518,28 @@
                     <button class="btn btn-custom btn-add" onclick="openModal('handoverModal')"><i class="fas fa-plus-circle"></i> 新增交更事項</button>
                     <button class="btn btn-custom btn-outline-secondary bg-white" onclick="openModal('noteModal')"><i class="fas fa-sticky-note"></i> 新增注意事項</button>
                     <button class="btn btn-custom btn-warning text-dark" onclick="openModal('specialModal')"><i class="fas fa-bullhorn"></i> 新增特別事項 / 全體注意</button>
+                    <button class="btn btn-custom text-white shadow-sm" style="background-color: #6f42c1;" onclick="openModal('cbtModal')"><i class="fas fa-box-open"></i> 新增 CBT / 物品派發</button>
                     <button class="btn btn-custom text-white" style="background-color: #20c997;" onclick="openModal('meetingModal')"><i class="fas fa-handshake"></i> 新增 Meeting Room Booking</button>
                 </div>
 
                 <div class="row mb-4">
-                    <div class="col-12">
+                    <div class="col-12 mb-4">
                         <div class="station-header bg-warning text-dark mb-3 d-flex justify-content-between align-items-center" style="font-size: 1.3rem; letter-spacing: 1px;">
                             <span><i class="fas fa-bullhorn text-danger"></i> 特別事項 / 官方資訊 / 全體注意</span>
                         </div>
                         <div id="special-notes-list" class="d-flex flex-column gap-2"></div>
                     </div>
                     
-                    <div class="col-12 mt-4">
+                    <div class="col-md-6">
+                        <div class="station-header mb-3 d-flex justify-content-between align-items-center text-white shadow-sm" style="background-color: #6f42c1; font-size: 1.3rem; letter-spacing: 1px;">
+                            <span><i class="fas fa-box-open text-warning"></i> CBT, Ack. 及物品派發</span>
+                        </div>
+                        <div id="cbt-list" class="d-flex flex-column gap-2"></div>
+                    </div>
+                    
+                    <div class="col-md-6">
                         <div class="station-header mb-3 d-flex justify-content-between align-items-center text-dark shadow-sm" style="background-color: #d1e7dd; font-size: 1.3rem; letter-spacing: 1px;">
-                            <span><i class="fas fa-handshake text-success"></i> ETS Meeting Room Booking (今日預約)</span>
+                            <span><i class="fas fa-handshake text-success"></i> ETS Meeting Room (今日預約)</span>
                         </div>
                         <div id="today-meeting-list" class="d-flex flex-column gap-2"></div>
                     </div>
@@ -903,6 +911,29 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- CBT Category Setup -->
+                        <div class="col-lg-6">
+                            <div class="card h-100 shadow-sm border-0">
+                                <div class="card-header text-white fw-bold" style="background-color: #6f42c1;"><i class="fas fa-tags"></i> CBT / 物品派發 類別設定</div>
+                                <div class="card-body d-flex flex-column">
+                                    <ul id="setup-cbtcategory-list" class="list-group list-group-flush mb-3 small flex-grow-1" style="max-height: 250px; overflow-y: auto;"></ul>
+                                    <div class="input-group input-group-sm mt-auto">
+                                        <input type="text" id="new-cbtcategory-name" class="form-control" placeholder="新增類別...">
+                                        <select id="new-cbtcategory-color" class="form-select" style="max-width:120px;">
+                                            <option value="primary" class="text-primary fw-bold">藍色</option>
+                                            <option value="danger" class="text-danger fw-bold">紅色</option>
+                                            <option value="warning" class="text-warning fw-bold">黃色</option>
+                                            <option value="success" class="text-success fw-bold">綠色</option>
+                                            <option value="info" class="text-info fw-bold">淺藍</option>
+                                            <option value="dark" class="text-dark fw-bold">黑色</option>
+                                            <option value="secondary" class="text-secondary fw-bold">灰色</option>
+                                        </select>
+                                        <button class="btn text-white" style="background-color: #6f42c1;" onclick="addSetupColorItem('cbtCategory')"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>
@@ -918,6 +949,7 @@
                     <div class="modal-header bg-dark text-white"><h5 class="modal-title"><i class="fas fa-edit"></i> 新增/修改 交更事項</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body">
                         <input type="hidden" id="ho-id">
+                        <input type="hidden" id="ho-order">
                         <div class="row g-2 mb-3">
                             <div class="col-6"><label class="form-label small fw-bold">日期</label><input type="date" id="ho-date" class="form-control form-control-sm"></div>
                             <div class="col-6">
@@ -931,7 +963,7 @@
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-6"><label class="form-label small fw-bold">To (更份)</label><select id="ho-to" class="form-select form-select-sm"></select></div>
-                            <div class="col-6"><label class="form-label small fw-bold">優先類別</label><select id="ho-priority" class="form-select form-select-sm"></select></div>
+                            <div class="col-6"><label class="form-label small fw-bold">類別</label><select id="ho-priority" class="form-select form-select-sm"></select></div>
                         </div>
                         <div class="mb-3"><label class="form-label small fw-bold text-primary">To-do items</label><input type="text" id="ho-todo" class="form-control form-control-sm" placeholder="輸入待辦事項..."></div>
                         <div class="mb-3"><label class="form-label small fw-bold">Follow Up Action</label><input type="text" id="ho-action" class="form-control form-control-sm"></div>
@@ -1000,6 +1032,47 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light"><button type="button" class="btn btn-warning px-4 rounded-pill fw-bold" onclick="saveSpecialNote()">儲存</button></div>
+                </div></div>
+        </div>
+        
+        <!-- CBT Modal -->
+        <div class="modal fade" id="cbtModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow">
+                    <div class="modal-header text-white" style="background-color: #6f42c1;"><h5 class="modal-title"><i class="fas fa-box-open"></i> 新增/修改 CBT 及物品派發</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        <input type="hidden" id="cbt-id">
+                        <input type="hidden" id="cbt-order">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">目標職員</label>
+                            <input type="text" id="cbt-staff" class="form-control form-control-sm" list="cbt-staff-options" placeholder="輸入或選擇目標職員...">
+                            <datalist id="cbt-staff-options">
+                                <option value="All">
+                            </datalist>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">類別</label>
+                                <select id="cbt-category" class="form-select form-select-sm" onchange="toggleCbtStorage()"></select>
+                            </div>
+                            <div class="col-6" id="cbt-storage-container" style="display: none;">
+                                <label class="form-label small fw-bold">存放位置 (物品派發)</label>
+                                <select id="cbt-storage" class="form-select form-select-sm">
+                                    <option value="TST">TST</option>
+                                    <option value="ETS">ETS</option>
+                                    <option value="TST & ETS">TST & ETS</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">內容 / 詳情</label>
+                            <textarea id="cbt-content" class="form-control form-control-sm" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">完成日期 (Deadline)</label>
+                            <input type="date" id="cbt-deadline" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light"><button type="button" class="btn text-white px-4 rounded-pill" style="background-color: #6f42c1;" onclick="saveCbt()">儲存</button></div>
                 </div></div>
         </div>
 
@@ -1263,7 +1336,7 @@
                     <div class="modal-body" style="font-size: 1.2rem; line-height: 1.8;">
                         <div class="row mb-3">
                             <div class="col-6">
-                                <span class="fw-bold text-muted fs-6">優先級別 Priority:</span><br>
+                                <span class="fw-bold text-muted fs-6">類別 Category:</span><br>
                                 <span id="view-ho-priority"></span>
                             </div>
                             <div class="col-6">
@@ -1423,6 +1496,12 @@
             { name: 'Informed', color: 'success' },
             { name: 'Pending Confirmation', color: 'warning' }
         ];
+        
+        const defaultSetupCbtCategory = [
+            { name: 'CBT', color: 'primary' }, 
+            { name: 'Acknowledgement', color: 'info' }, 
+            { name: '物品派發', color: 'warning' }
+        ];
 
         // ============================================================
         //  4. State
@@ -1436,6 +1515,7 @@
             links: [],
             phonebook: [],
             meetings: [], 
+            cbtItems: [],
             setupTo: defaultSetupTo,
             setupDuty: defaultSetupDuty,
             setupMonthlyDuty: defaultSetupMonthlyDuty,
@@ -1445,7 +1525,8 @@
             setupEventSpecific: defaultSetupEventSpecific,
             setupEventMisc: defaultSetupEventMisc,
             setupPriority: defaultSetupPriority,
-            setupFollowUpStatus: defaultSetupFollowUpStatus
+            setupFollowUpStatus: defaultSetupFollowUpStatus,
+            setupCbtCategories: defaultSetupCbtCategory
         };
 
         let currentViewingDateStr = getTodayStr();
@@ -1568,7 +1649,8 @@
                 link: new bootstrap.Modal(document.getElementById('linkModal')),
                 phone: new bootstrap.Modal(document.getElementById('phoneModal')),
                 meeting: new bootstrap.Modal(document.getElementById('meetingModal')),
-                meetingDay: new bootstrap.Modal(document.getElementById('meetingDayModal'))
+                meetingDay: new bootstrap.Modal(document.getElementById('meetingDayModal')),
+                cbt: new bootstrap.Modal(document.getElementById('cbtModal'))
             };
 
             let dateSelectDuty = document.getElementById('setup-duty-date');
@@ -1610,6 +1692,8 @@
                     'priority').set({ items: defaultSetupPriority }); });
             db.collection('setup').doc('followUpStatus').get().then(doc => { if (!doc.exists) db.collection('setup').doc(
                     'followUpStatus').set({ items: defaultSetupFollowUpStatus }); });
+            db.collection('setup').doc('cbtCategory').get().then(doc => { if (!doc.exists) db.collection('setup').doc(
+                    'cbtCategory').set({ items: defaultSetupCbtCategory }); });
 
             db.collection("handovers").onSnapshot(snap => {
                 localData.handovers = snap.docs.map(doc => { let d = doc.data();
@@ -1644,6 +1728,12 @@
                     d.id = doc.id; return d; });
                 renderAll(); 
             });
+            
+            db.collection("cbtItems").onSnapshot(snap => {
+                localData.cbtItems = snap.docs.map(doc => { let d = doc.data();
+                    d.id = doc.id; return d; });
+                renderAll(); 
+            });
 
             db.collection("setup").doc("to").onSnapshot(doc => { if (doc.exists) { localData.setupTo = doc.data();
                     renderAll(); } });
@@ -1674,6 +1764,10 @@
             db.collection("setup").doc("followUpStatus").onSnapshot(doc => { if (doc.exists) { localData
                         .setupFollowUpStatus = doc.data().items || [];
                     renderAll(); } });
+            db.collection("setup").doc("cbtCategory").onSnapshot(doc => { if (doc.exists) { localData
+                        .setupCbtCategories = doc.data().items || [];
+                    renderAll();
+                    updateCbtCategoryDropdown(); } });
 
             startClock();
         }
@@ -1741,6 +1835,7 @@
             renderHeader();
             renderCITService();
             renderSpecialNotes();
+            renderCbtItems();
             renderTodayMeetings();
             renderHandover();
             renderNotes();
@@ -1756,6 +1851,7 @@
             renderSetupEventLog();
             renderSetupColorItems('priority');
             renderSetupColorItems('followUpStatus');
+            renderSetupColorItems('cbtCategory');
         }
 
         function renderHeader() {
@@ -1782,6 +1878,69 @@
                 `<span class="badge bg-danger shadow-sm px-2 py-1" style="font-size: 0.85rem; border: 1px solid #fff;"><i class="fas fa-times-circle"></i> ${str}</span>`;
             let citContainer = document.getElementById('cit-service-display');
             if (citContainer) citContainer.innerHTML = displayHTML;
+        }
+
+        // ---------- CBT Items ----------
+        function renderCbtItems() {
+            let container = document.getElementById('cbt-list');
+            if (!container) return;
+            let filtered = localData.cbtItems.filter(c =>
+                !c.isCompleted || (c.isCompleted && c.completedDate === currentViewingDateStr)
+            );
+            filtered.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            let html = '';
+            filtered.forEach(c => {
+                let diffDays = 999;
+                let isAlert = false;
+                let isOverdue = false;
+                if (c.deadline) {
+                    let dParts = c.deadline.split('-');
+                    let vParts = currentViewingDateStr.split('-');
+                    let dObj = new Date(dParts[0], dParts[1]-1, dParts[2]);
+                    let vObj = new Date(vParts[0], vParts[1]-1, vParts[2]);
+                    diffDays = Math.round((dObj - vObj) / (1000 * 60 * 60 * 24));
+                    if (!c.isCompleted) {
+                        if (diffDays >= 0 && diffDays <= 3) isAlert = true;
+                        if (diffDays < 0) isOverdue = true;
+                    }
+                }
+
+                let extraClass = '';
+                if (isAlert) extraClass = 'target-alert';
+                if (isOverdue) extraClass = 'overdue-card';
+                if (c.isCompleted) extraClass = 'completed';
+
+                let cSetup = localData.setupCbtCategories.find(cat => cat.name === c.category) || { color: 'primary' };
+                let badgeClass = `bg-${cSetup.color}`;
+                if (['warning', 'info', 'light'].includes(cSetup.color)) badgeClass += ' text-dark';
+
+                let storageHtml = c.category === '物品派發' && c.storage ? `<span class="badge bg-secondary ms-1 shadow-sm"><i class="fas fa-map-marker-alt"></i> ${c.storage}</span>` : '';
+
+                html += `
+                <div class="item-card bg-white interactive-card ${extraClass}" style="border-left: 5px solid var(--bs-${cSetup.color}); margin-bottom: 10px;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center flex-wrap gap-1">
+                            <input class="form-check-input me-1 mt-0" type="checkbox" ${c.isCompleted ? 'checked' : ''} onchange="toggleComplete('cbtItems', '${c.id}')">
+                            <span class="badge ${badgeClass} shadow-sm">${c.category}</span>
+                            <span class="fw-bold text-dark ms-1 me-2" style="font-size: 0.95rem;"><i class="fas fa-user text-muted"></i> ${c.staff}</span>
+                            ${storageHtml}
+                            ${c.deadline ? `<span class="badge ${isAlert ? 'bg-danger pulse' : (isOverdue ? 'bg-danger' : 'bg-outline-secondary border text-secondary')} shadow-sm"><i class="fas fa-calendar-check"></i> 完結: ${c.deadline}</span>` : ''}
+                            ${isOverdue && !c.isCompleted ? '<span class="overdue-text"><i class="fas fa-exclamation-triangle"></i> Overdue</span>' : ''}
+                        </div>
+                        <div class="action-icons text-nowrap" onclick="event.stopPropagation();">
+                            <i class="fas fa-arrow-up text-secondary py-0 me-1" onclick="moveCbtItem('${c.id}', -1)" title="上移"></i>
+                            <i class="fas fa-arrow-down text-secondary py-0 me-2" onclick="moveCbtItem('${c.id}', 1)" title="下移"></i>
+                            <i class="fas fa-edit text-primary me-2" onclick="editCbt('${c.id}')" title="編輯"></i>
+                            <i class="fas fa-trash text-danger" onclick="deleteItem('cbtItems', '${c.id}')" title="刪除"></i>
+                        </div>
+                    </div>
+                    <div class="card-content fw-bold text-dark" style="white-space: pre-line; font-size:0.9rem;">${c.content}</div>
+                </div>`;
+            });
+            container.innerHTML = filtered.length === 0 ?
+                '<div class="text-center text-muted p-3 bg-white rounded shadow-sm"><i class="fas fa-box-open mb-2 opacity-50 fa-2x"></i><br>目前無 CBT 或物品派發</div>' :
+                html;
         }
 
         // ---------- ETS Meeting Room Bookings ----------
@@ -1987,8 +2146,8 @@
                             ${n.targetDate ? `<span class="badge ${isAlert ? 'bg-danger pulse' : 'bg-outline-danger border text-danger'} ms-1 shadow-sm"><i class="fas fa-calendar-check"></i> Target: ${n.targetDate}</span>` : ''}
                         </div>
                         <div class="text-nowrap action-icons" onclick="event.stopPropagation();">
-                            <i class="fas fa-arrow-up text-secondary me-1" onclick="moveSpecialNote('${n.id}', -1)" title="上移"></i>
-                            <i class="fas fa-arrow-down text-secondary me-2" onclick="moveSpecialNote('${n.id}', 1)" title="下移"></i>
+                            <i class="fas fa-arrow-up text-secondary me-1" onclick="moveItem('specialNotes', '${n.id}', -1)" title="上移"></i>
+                            <i class="fas fa-arrow-down text-secondary me-2" onclick="moveItem('specialNotes', '${n.id}', 1)" title="下移"></i>
                             <i class="fas fa-edit text-primary me-2" onclick="editSpecialNote('${n.id}')" title="編輯"></i>
                             <i class="fas fa-trash text-danger" onclick="deleteItem('specialNotes', '${n.id}')" title="刪除"></i>
                         </div>
@@ -2023,30 +2182,6 @@
             viewModal.show();
         }
 
-        function moveSpecialNote(id, direction) {
-            let filtered = localData.specialNotes.filter(n => {
-                if (!n.period || n.period === 9999) return true;
-                let cParts = n.creationDate.split('-');
-                let vParts = currentViewingDateStr.split('-');
-                let cDate = new Date(cParts[0], cParts[1] - 1, cParts[2]);
-                let vDate = new Date(vParts[0], vParts[1] - 1, vParts[2]);
-                let diffDays = Math.round((vDate - cDate) / (1000 * 60 * 60 * 24));
-                return diffDays <= n.period && diffDays >= 0;
-            });
-            filtered.sort((a, b) => a.order - b.order);
-            let index = filtered.findIndex(n => n.id === id);
-            if (index < 0) return;
-            let newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= filtered.length) return;
-            let currentItem = filtered[index];
-            let swapItem = filtered[newIndex];
-            let tempOrder = currentItem.order;
-            currentItem.order = swapItem.order;
-            swapItem.order = tempOrder;
-            db.collection('specialNotes').doc(currentItem.id).update({ order: currentItem.order });
-            db.collection('specialNotes').doc(swapItem.id).update({ order: swapItem.order });
-        }
-
         // ---------- Handover ----------
         function renderHandover(targetDate = currentViewingDateStr, isCalDetail = false) {
             let filtered;
@@ -2062,23 +2197,37 @@
 
             let buildHTML = (station) => {
                 let items = filtered.filter(h => h.station === station || h.station === 'TST and ETS');
+                // 以 order 作主要排序邏輯，已完成事項放底部
                 items.sort((a, b) => {
                     if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
-                    let idxA = localData.setupPriority.findIndex(p => p.name === a.priority);
-                    let idxB = localData.setupPriority.findIndex(p => p.name === b.priority);
-                    if (idxA === -1) idxA = 999;
-                    if (idxB === -1) idxB = 999;
-                    return idxA - idxB;
+                    return (a.order || 0) - (b.order || 0);
                 });
 
                 let html = '';
                 items.forEach(h => {
-                    let pSetup = localData.setupPriority.find(p => p.name === h.priority) || { color: 'primary' };
-                    let badgeClass = `bg-${pSetup.color}`;
-                    if (pSetup.color === 'warning' || pSetup.color === 'info') badgeClass += ' text-dark';
+                    let hParts = h.date.split('-');
+                    let vParts = currentViewingDateStr.split('-');
+                    let hDateObj = new Date(hParts[0], hParts[1] - 1, hParts[2]);
+                    let vDateObj = new Date(vParts[0], vParts[1] - 1, vParts[2]);
+                    let diffDays = Math.floor((vDateObj - hDateObj) / (1000 * 60 * 60 * 24));
+
+                    let pSetup = { ...(localData.setupPriority.find(p => p.name === h.priority) || { color: 'primary' }) };
+                    let priorityDisplay = h.priority;
+                    let badgeClass = '';
                     let extraClass = '';
-                    if (pSetup.color === 'danger') extraClass = 'is-urgent';
-                    else if (pSetup.color === 'warning') extraClass = 'is-important';
+
+                    // 檢查是否超過15日未完成 (Long Outstanding)
+                    if (!h.isCompleted && diffDays > 15) {
+                        pSetup.color = 'success';
+                        priorityDisplay = 'Long Outstanding';
+                        badgeClass = 'bg-success';
+                        extraClass = 'border-success shadow-sm';
+                    } else {
+                        badgeClass = `bg-${pSetup.color}`;
+                        if (pSetup.color === 'warning' || pSetup.color === 'info') badgeClass += ' text-dark';
+                        if (pSetup.color === 'danger') extraClass = 'is-urgent';
+                        else if (pSetup.color === 'warning') extraClass = 'is-important';
+                    }
 
                     let cardClass = h.isCompleted ? 'item-card completed' : `item-card ${extraClass}`;
                     let priorityBar = `<div class="priority-indicator bg-${pSetup.color}"></div>`;
@@ -2120,13 +2269,15 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div onclick="event.stopPropagation();">
                                 <input class="form-check-input me-2" type="checkbox" ${h.isCompleted ? 'checked' : ''} onchange="toggleComplete('handovers', '${h.id}')">
-                                <span class="badge ${badgeClass} shadow-sm">${h.priority}</span>
+                                <span class="badge ${badgeClass} shadow-sm">${priorityDisplay}</span>
                                 ${fuBadge}
                                 ${dateBadge}
                             </div>
-                            <div class="action-icons" onclick="event.stopPropagation();">
-                                <i class="fas fa-edit" onclick="editHandover('${h.id}')" title="編輯"></i>
-                                <i class="fas fa-trash" onclick="deleteItem('handovers', '${h.id}')" title="刪除"></i>
+                            <div class="action-icons text-nowrap" onclick="event.stopPropagation();">
+                                <i class="fas fa-arrow-up text-secondary py-0 me-1" onclick="moveHandover('${h.id}', -1, '${station}')" title="上移"></i>
+                                <i class="fas fa-arrow-down text-secondary py-0 me-2" onclick="moveHandover('${h.id}', 1, '${station}')" title="下移"></i>
+                                <i class="fas fa-edit text-primary me-2" onclick="editHandover('${h.id}')" title="編輯"></i>
+                                <i class="fas fa-trash text-danger" onclick="deleteItem('handovers', '${h.id}')" title="刪除"></i>
                             </div>
                         </div>
                         <div class="card-content">
@@ -2166,11 +2317,27 @@
                 '<span class="text-muted">無</span>';
             document.getElementById('view-ho-remark').innerHTML = h.remark ? h.remark.replace(/\n/g, '<br>') :
                 '<span class="text-muted">無</span>';
-            let pSetup = localData.setupPriority.find(p => p.name === h.priority) || { color: 'primary' };
-            let badgeClass = `bg-${pSetup.color}`;
-            if (pSetup.color === 'warning' || pSetup.color === 'info') badgeClass += ' text-dark';
+
+            let hParts = h.date.split('-');
+            let vParts = currentViewingDateStr.split('-');
+            let hDateObj = new Date(hParts[0], hParts[1]-1, hParts[2]);
+            let vDateObj = new Date(vParts[0], vParts[1]-1, vParts[2]);
+            let diffDays = Math.floor((vDateObj - hDateObj) / (1000 * 60 * 60 * 24));
+
+            let pSetup = { ...(localData.setupPriority.find(p => p.name === h.priority) || { color: 'primary' }) };
+            let priorityDisplay = h.priority;
+            let badgeClass = '';
+
+            if (!h.isCompleted && diffDays > 15) {
+                badgeClass = 'bg-success';
+                priorityDisplay = 'Long Outstanding';
+            } else {
+                badgeClass = `bg-${pSetup.color}`;
+                if (pSetup.color === 'warning' || pSetup.color === 'info') badgeClass += ' text-dark';
+            }
+
             document.getElementById('view-ho-priority').innerHTML =
-                `<span class="badge ${badgeClass} fs-6 shadow-sm">${h.priority}</span>`;
+                `<span class="badge ${badgeClass} fs-6 shadow-sm">${priorityDisplay}</span>`;
             let linkContainer = document.getElementById('view-ho-link-container');
             let linkElement = document.getElementById('view-ho-link');
             if (h.link) {
@@ -2234,8 +2401,8 @@
                                 ${dateBadge}
                             </div>
                             <div class="action-icons text-nowrap" onclick="event.stopPropagation();">
-                                <i class="fas fa-arrow-up text-secondary py-0 me-1" onclick="moveItem('notes', '${n.id}', -1)" title="上移"></i>
-                                <i class="fas fa-arrow-down text-secondary py-0 me-2" onclick="moveItem('notes', '${n.id}', 1)" title="下移"></i>
+                                <i class="fas fa-arrow-up text-secondary py-0 me-1" onclick="moveNote('${n.id}', -1, '${station}')" title="上移"></i>
+                                <i class="fas fa-arrow-down text-secondary py-0 me-2" onclick="moveNote('${n.id}', 1, '${station}')" title="下移"></i>
                                 <i class="fas fa-edit text-primary me-2" onclick="editNote('${n.id}')" title="編輯"></i>
                                 <i class="fas fa-trash text-danger" onclick="deleteItem('notes', '${n.id}')" title="刪除"></i>
                             </div>
@@ -2817,8 +2984,93 @@
             }
         }
 
+        function moveHandover(id, direction, station) {
+            let filtered = localData.handovers.filter(h =>
+                (h.date === currentViewingDateStr || (!h.isCompleted && h.date < currentViewingDateStr) || (h.isCompleted && h.completedDate === currentViewingDateStr)) &&
+                (h.station === station || h.station === 'TST and ETS')
+            );
+            filtered.sort((a, b) => {
+                if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
+                return (a.order || 0) - (b.order || 0);
+            });
+            let index = filtered.findIndex(n => n.id === id);
+            if (index < 0) return;
+            let newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= filtered.length) return;
+            // 不允許跨越 完成/未完成 邊界交換
+            if (filtered[index].isCompleted !== filtered[newIndex].isCompleted) return;
+
+            let currentItem = filtered[index];
+            let swapItem = filtered[newIndex];
+            
+            if (currentItem.order === undefined || swapItem.order === undefined || currentItem.order === swapItem.order) {
+                currentItem.order = currentItem.order || -Date.now() + index;
+                swapItem.order = swapItem.order || -Date.now() + newIndex;
+            }
+
+            let tempOrder = currentItem.order;
+            currentItem.order = swapItem.order;
+            swapItem.order = tempOrder;
+
+            db.collection('handovers').doc(currentItem.id).update({ order: currentItem.order });
+            db.collection('handovers').doc(swapItem.id).update({ order: swapItem.order });
+        }
+        
+        function moveNote(id, direction, station) {
+            let filtered = localData.notes.filter(n =>
+                (n.date === currentViewingDateStr || (!n.isCompleted && n.date < currentViewingDateStr) || (n.isCompleted && n.completedDate === currentViewingDateStr)) &&
+                (n.station === station || n.station === 'TST and ETS')
+            );
+            filtered.sort((a, b) => (a.order || 0) - (b.order || 0));
+            let index = filtered.findIndex(n => n.id === id);
+            if (index < 0) return;
+            let newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= filtered.length) return;
+
+            let currentItem = filtered[index];
+            let swapItem = filtered[newIndex];
+            
+            if (currentItem.order === undefined || swapItem.order === undefined || currentItem.order === swapItem.order) {
+                currentItem.order = currentItem.order || Date.now() + index;
+                swapItem.order = swapItem.order || Date.now() + newIndex;
+            }
+
+            let tempOrder = currentItem.order;
+            currentItem.order = swapItem.order;
+            swapItem.order = tempOrder;
+
+            db.collection('notes').doc(currentItem.id).update({ order: currentItem.order });
+            db.collection('notes').doc(swapItem.id).update({ order: swapItem.order });
+        }
+        
+        function moveCbtItem(id, direction) {
+            let filtered = localData.cbtItems.filter(c =>
+                !c.isCompleted || (c.isCompleted && c.completedDate === currentViewingDateStr)
+            );
+            filtered.sort((a, b) => (a.order || 0) - (b.order || 0));
+            let index = filtered.findIndex(n => n.id === id);
+            if (index < 0) return;
+            let newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= filtered.length) return;
+
+            let currentItem = filtered[index];
+            let swapItem = filtered[newIndex];
+
+            if (currentItem.order === undefined || swapItem.order === undefined || currentItem.order === swapItem.order) {
+                currentItem.order = currentItem.order || -Date.now() + index;
+                swapItem.order = swapItem.order || -Date.now() + newIndex;
+            }
+
+            let tempOrder = currentItem.order;
+            currentItem.order = swapItem.order;
+            swapItem.order = tempOrder;
+
+            db.collection('cbtItems').doc(currentItem.id).update({ order: currentItem.order });
+            db.collection('cbtItems').doc(swapItem.id).update({ order: swapItem.order });
+        }
+
+        // 用於 Links 及 Phonebook 等全域列表的移動
         function moveItem(type, id, direction) {
-            // 自動為未有 order 的項目加上預設值，避免出錯
             localData[type].forEach((item, index) => { if (item.order === undefined) item.order = Date.now() + index; });
             
             let arr = localData[type].sort((a, b) => a.order - b.order);
@@ -2843,10 +3095,15 @@
 
             if (modalId === 'handoverModal') {
                 document.getElementById('ho-id').value = '';
+                document.getElementById('ho-order').value = -Date.now();
                 document.getElementById('ho-date').value = d;
                 document.getElementById('ho-station').value = 'ETS';
                 updateToDropdown();
                 updatePriorityDropdown();
+                setTimeout(() => {
+                    let pSelect = document.getElementById('ho-priority');
+                    if (pSelect) pSelect.value = 'Normal';
+                }, 50);
                 document.getElementById('ho-todo').value = '';
                 document.getElementById('ho-action').value = '';
                 document.getElementById('ho-link').value = '';
@@ -2905,8 +3162,32 @@
                 document.getElementById('mt-email').value = '';
                 document.getElementById('mt-purpose').value = '';
                 document.getElementById('mt-remark').value = '';
+            } else if (modalId === 'cbtModal') {
+                document.getElementById('cbt-id').value = '';
+                document.getElementById('cbt-order').value = -Date.now();
+                document.getElementById('cbt-staff').value = 'All';
+                updateCbtCategoryDropdown();
+                document.getElementById('cbt-content').value = '';
+                document.getElementById('cbt-deadline').value = '';
+                document.getElementById('cbt-storage-container').style.display = 'none';
+                document.getElementById('cbt-storage').value = 'TST';
             }
+
             modals[modalId.replace('Modal', '')].show();
+
+            if (modalId === 'handoverModal' && document.getElementById('calDetailModal').classList.contains('show')) {
+                setTimeout(() => {
+                    let hoModal = document.getElementById('handoverModal');
+                    if (hoModal) hoModal.style.zIndex = '1060';
+                    let backdrops = document.querySelectorAll('.modal-backdrop');
+                    if (backdrops.length > 1) {
+                        backdrops[backdrops.length - 1].style.zIndex = '1059';
+                    }
+                }, 150);
+            } else if (modalId === 'handoverModal') {
+                let hoModal = document.getElementById('handoverModal');
+                if (hoModal) hoModal.style.zIndex = '';
+            }
         }
 
         function updateToDropdown() {
@@ -2953,6 +3234,28 @@
             select.innerHTML = '';
             setup.forEach(opt => select.innerHTML += `<option value="${opt}">${opt}</option>`);
         }
+        
+        function updateCbtCategoryDropdown() {
+            let sel = document.getElementById('cbt-category');
+            if(sel) {
+                let cur = sel.value;
+                sel.innerHTML = '';
+                localData.setupCbtCategories.forEach(c => {
+                    sel.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+                });
+                if (cur && localData.setupCbtCategories.some(c=>c.name===cur)) sel.value = cur;
+                toggleCbtStorage();
+            }
+        }
+
+        function toggleCbtStorage() {
+            let cat = document.getElementById('cbt-category').value;
+            if (cat === '物品派發') {
+                document.getElementById('cbt-storage-container').style.display = 'block';
+            } else {
+                document.getElementById('cbt-storage-container').style.display = 'none';
+            }
+        }
 
         function addPhoneInputRow(subName = '', number = '') {
             let container = document.getElementById('phone-inputs-container');
@@ -2970,8 +3273,10 @@
         // ---------- Save Handover ----------
         function saveHandover() {
             let id = document.getElementById('ho-id').value || generateId();
+            let orderVal = parseInt(document.getElementById('ho-order').value) || -Date.now();
             let item = {
                 id,
+                order: orderVal,
                 date: document.getElementById('ho-date').value,
                 station: document.getElementById('ho-station').value,
                 to: document.getElementById('ho-to').value,
@@ -2989,6 +3294,7 @@
             if (existing) {
                 item.isCompleted = existing.isCompleted;
                 item.markFollowUp = existing.markFollowUp;
+                item.order = existing.order !== undefined ? existing.order : orderVal;
                 item.followUpStatus = existing.followUpStatus || (existing.markFollowUp ? 'Follow up' : '');
                 if (item.followUpStatus === 'Mark F/U') item.followUpStatus = 'Follow up';
                 if (existing.completedDate) item.completedDate = existing.completedDate;
@@ -3000,6 +3306,7 @@
             let item = localData.handovers.find(i => i.id === id);
             if (item) {
                 document.getElementById('ho-id').value = item.id;
+                document.getElementById('ho-order').value = item.order || -Date.now();
                 document.getElementById('ho-date').value = item.date;
                 document.getElementById('ho-station').value = item.station;
                 updateToDropdown();
@@ -3087,6 +3394,43 @@
                 document.getElementById('sp-priority').value = item.priority || 'For Your Information';
                 document.getElementById('sp-target-date').value = item.targetDate || '';
                 modals.special.show();
+            }
+        }
+        
+        // ---------- Save CBT ----------
+        function saveCbt() {
+            let id = document.getElementById('cbt-id').value || generateId();
+            let item = {
+                id: id,
+                order: parseInt(document.getElementById('cbt-order').value) || -Date.now(),
+                staff: document.getElementById('cbt-staff').value || 'All',
+                category: document.getElementById('cbt-category').value,
+                storage: document.getElementById('cbt-storage').value,
+                content: document.getElementById('cbt-content').value,
+                deadline: document.getElementById('cbt-deadline').value,
+                isCompleted: false
+            };
+            let existing = localData.cbtItems.find(i => i.id === id);
+            if (existing) {
+                item.isCompleted = existing.isCompleted;
+                if (existing.completedDate) item.completedDate = existing.completedDate;
+            }
+            db.collection('cbtItems').doc(id).set(item).then(() => modals.cbt.hide());
+        }
+
+        function editCbt(id) {
+            let item = localData.cbtItems.find(i => i.id === id);
+            if (item) {
+                document.getElementById('cbt-id').value = item.id;
+                document.getElementById('cbt-order').value = item.order || -Date.now();
+                document.getElementById('cbt-staff').value = item.staff || 'All';
+                updateCbtCategoryDropdown();
+                document.getElementById('cbt-category').value = item.category || 'CBT';
+                toggleCbtStorage();
+                document.getElementById('cbt-storage').value = item.storage || 'TST';
+                document.getElementById('cbt-content').value = item.content || '';
+                document.getElementById('cbt-deadline').value = item.deadline || '';
+                modals.cbt.show();
             }
         }
 
@@ -3618,15 +3962,26 @@
 
         // --- Priority & Follow Up Status Setup ---
         function renderSetupColorItems(type) {
-            let listId = type === 'priority' ? 'setup-priority-list' : 'setup-followup-list';
+            let listId;
+            let dataArr;
+            if (type === 'priority') {
+                listId = 'setup-priority-list';
+                dataArr = localData.setupPriority;
+            } else if (type === 'followUpStatus') {
+                listId = 'setup-followup-list';
+                dataArr = localData.setupFollowUpStatus;
+            } else if (type === 'cbtCategory') {
+                listId = 'setup-cbtcategory-list';
+                dataArr = localData.setupCbtCategories;
+            }
+            
             let ul = document.getElementById(listId);
             if (!ul) return;
             ul.innerHTML = '';
-            let dataArr = type === 'priority' ? localData.setupPriority : localData.setupFollowUpStatus;
 
             dataArr.forEach((item, idx) => {
                 let badgeClass = `bg-${item.color}`;
-                if (item.color === 'warning' || item.color === 'info') badgeClass += ' text-dark';
+                if (['warning', 'info', 'light'].includes(item.color)) badgeClass += ' text-dark';
                 ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 border-bottom">
                     <span class="badge ${badgeClass} fs-6 shadow-sm">${item.name}</span>
                     <div class="text-nowrap">
@@ -3640,14 +3995,24 @@
         }
 
         function addSetupColorItem(type) {
-            let nameInput = document.getElementById(type === 'priority' ? 'new-priority-name' :
-            'new-followup-name');
-            let colorInput = document.getElementById(type === 'priority' ? 'new-priority-color' :
-            'new-followup-color');
+            let nameInput, colorInput, dataArr;
+            if (type === 'priority') {
+                nameInput = document.getElementById('new-priority-name');
+                colorInput = document.getElementById('new-priority-color');
+                dataArr = localData.setupPriority;
+            } else if (type === 'followUpStatus') {
+                nameInput = document.getElementById('new-followup-name');
+                colorInput = document.getElementById('new-followup-color');
+                dataArr = localData.setupFollowUpStatus;
+            } else if (type === 'cbtCategory') {
+                nameInput = document.getElementById('new-cbtcategory-name');
+                colorInput = document.getElementById('new-cbtcategory-color');
+                dataArr = localData.setupCbtCategories;
+            }
+            
             let val = nameInput.value.trim();
             let color = colorInput.value;
             if (val) {
-                let dataArr = type === 'priority' ? localData.setupPriority : localData.setupFollowUpStatus;
                 dataArr.push({ name: val, color: color });
                 db.collection("setup").doc(type).set({ items: dataArr }).then(() => {
                     nameInput.value = '';
@@ -3657,13 +4022,21 @@
 
         function deleteSetupColorItem(type, index) {
             if (!confirm('確定要刪除這項設定嗎？')) return;
-            let dataArr = type === 'priority' ? localData.setupPriority : localData.setupFollowUpStatus;
+            let dataArr;
+            if (type === 'priority') dataArr = localData.setupPriority;
+            else if (type === 'followUpStatus') dataArr = localData.setupFollowUpStatus;
+            else if (type === 'cbtCategory') dataArr = localData.setupCbtCategories;
+            
             dataArr.splice(index, 1);
             db.collection("setup").doc(type).set({ items: dataArr });
         }
 
         function moveSetupColorItem(type, index, direction) {
-            let dataArr = type === 'priority' ? localData.setupPriority : localData.setupFollowUpStatus;
+            let dataArr;
+            if (type === 'priority') dataArr = localData.setupPriority;
+            else if (type === 'followUpStatus') dataArr = localData.setupFollowUpStatus;
+            else if (type === 'cbtCategory') dataArr = localData.setupCbtCategories;
+            
             let newIndex = index + direction;
             if (newIndex < 0 || newIndex >= dataArr.length) return;
             let temp = dataArr[index];
@@ -3673,12 +4046,15 @@
         }
 
         function editSetupColorItem(type, index) {
-            let dataArr = type === 'priority' ? localData.setupPriority : localData.setupFollowUpStatus;
+            let dataArr;
+            if (type === 'priority') dataArr = localData.setupPriority;
+            else if (type === 'followUpStatus') dataArr = localData.setupFollowUpStatus;
+            else if (type === 'cbtCategory') dataArr = localData.setupCbtCategories;
+            
             let item = dataArr[index];
             let newName = prompt("請修改名稱:", item.name);
             if (newName === null) return;
-            let newColor = prompt("請修改顏色 (輸入: primary, danger, warning, success, info, dark, secondary):", item
-                .color);
+            let newColor = prompt("請修改顏色 (輸入: primary, danger, warning, success, info, dark, secondary):", item.color);
             if (newColor === null) return;
             dataArr[index].name = newName.trim() || item.name;
             dataArr[index].color = newColor.trim() || item.color;
@@ -3688,15 +4064,14 @@
         // --- Generic Setup Item Move / Edit / Delete ---
         function moveSetupItem(type, station, index, direction, subKey) {
             let dataObj, dbDoc;
-            if (type === 'to') { dataObj = localData.setupTo;
-                dbDoc = 'to'; } else if (type === 'duty') { dataObj = localData.setupDuty;
-                dbDoc = 'duty'; } else if (type === 'monthlyDuty') { dataObj = localData.setupMonthlyDuty;
-                dbDoc = 'monthlyDuty'; } else if (type === 'dutySpecific') { dataObj = localData.setupDutySpecific;
-                dbDoc = 'dutySpecific'; } else if (type === 'eventWeekly') { dataObj = localData.setupEventWeekly;
-                dbDoc = 'eventWeekly'; } else if (type === 'eventMonthly') { dataObj = localData.setupEventMonthly;
-                dbDoc = 'eventMonthly'; } else if (type === 'eventSpecific') { dataObj = localData.setupEventSpecific;
-                dbDoc = 'eventSpecific'; } else if (type === 'eventMisc') { dataObj = localData.setupEventMisc;
-                dbDoc = 'eventMisc'; }
+            if (type === 'to') { dataObj = localData.setupTo; dbDoc = 'to'; }
+            else if (type === 'duty') { dataObj = localData.setupDuty; dbDoc = 'duty'; }
+            else if (type === 'monthlyDuty') { dataObj = localData.setupMonthlyDuty; dbDoc = 'monthlyDuty'; }
+            else if (type === 'dutySpecific') { dataObj = localData.setupDutySpecific; dbDoc = 'dutySpecific'; }
+            else if (type === 'eventWeekly') { dataObj = localData.setupEventWeekly; dbDoc = 'eventWeekly'; }
+            else if (type === 'eventMonthly') { dataObj = localData.setupEventMonthly; dbDoc = 'eventMonthly'; }
+            else if (type === 'eventSpecific') { dataObj = localData.setupEventSpecific; dbDoc = 'eventSpecific'; }
+            else if (type === 'eventMisc') { dataObj = localData.setupEventMisc; dbDoc = 'eventMisc'; }
 
             let arr;
             if (subKey !== null && subKey !== undefined && subKey !== 'null') {
@@ -3715,11 +4090,10 @@
 
         function editSetupData(type, station, index, subKey) {
             let dataObj, dbDoc;
-            if (type === 'to') { dataObj = localData.setupTo;
-                dbDoc = 'to'; } else if (type === 'duty') { dataObj = localData.setupDuty;
-                dbDoc = 'duty'; } else if (type === 'monthlyDuty') { dataObj = localData.setupMonthlyDuty;
-                dbDoc = 'monthlyDuty'; } else if (type === 'dutySpecific') { dataObj = localData.setupDutySpecific;
-                dbDoc = 'dutySpecific'; }
+            if (type === 'to') { dataObj = localData.setupTo; dbDoc = 'to'; }
+            else if (type === 'duty') { dataObj = localData.setupDuty; dbDoc = 'duty'; }
+            else if (type === 'monthlyDuty') { dataObj = localData.setupMonthlyDuty; dbDoc = 'monthlyDuty'; }
+            else if (type === 'dutySpecific') { dataObj = localData.setupDutySpecific; dbDoc = 'dutySpecific'; }
 
             let currentVal = (subKey !== null) ? dataObj[station][subKey][index] : dataObj[station][index];
             let newVal = prompt("請修改內容:", currentVal);
@@ -3731,15 +4105,10 @@
         }
 
         function editSetupEventData(type, station, index, subKey) {
-            let dataObj = type === 'eventWeekly' ? localData.setupEventWeekly : (type === 'eventMonthly' ? localData
-                .setupEventMonthly : (type === 'eventSpecific' ? localData.setupEventSpecific : localData
-                .setupEventMisc));
-            let dbDoc = type === 'eventWeekly' ? 'eventWeekly' : (type === 'eventMonthly' ? 'eventMonthly' : (type ===
-                'eventSpecific' ? 'eventSpecific' : 'eventMisc'));
+            let dataObj = type === 'eventWeekly' ? localData.setupEventWeekly : (type === 'eventMonthly' ? localData.setupEventMonthly : (type === 'eventSpecific' ? localData.setupEventSpecific : localData.setupEventMisc));
+            let dbDoc = type === 'eventWeekly' ? 'eventWeekly' : (type === 'eventMonthly' ? 'eventMonthly' : (type === 'eventSpecific' ? 'eventSpecific' : 'eventMisc'));
 
-            let evt = (subKey !== null && subKey !== undefined && subKey !== 'null') ? dataObj[station][subKey][
-                index
-            ] : dataObj[station][index];
+            let evt = (subKey !== null && subKey !== undefined && subKey !== 'null') ? dataObj[station][subKey][index] : dataObj[station][index];
             if (!evt) return;
 
             let nShift = prompt("修改更份 (Shift):", evt.shift || '');
@@ -3755,8 +4124,7 @@
             let nMan = prompt("修改Manual Refer:", evt.manual || '');
             if (nMan === null) return;
 
-            let updatedObj = { shift: nShift.trim(), time: nTime.trim(), category: nCat.trim(), subCategory: nSub
-                    .trim(), contents: nCont.trim(), manual: nMan.trim() };
+            let updatedObj = { shift: nShift.trim(), time: nTime.trim(), category: nCat.trim(), subCategory: nSub.trim(), contents: nCont.trim(), manual: nMan.trim() };
 
             if (subKey !== null && subKey !== undefined && subKey !== 'null') {
                 dataObj[station][subKey][index] = updatedObj;
@@ -3770,15 +4138,14 @@
             if (!confirm('確定要刪除這項設定嗎？')) return;
 
             let dataObj, dbDoc;
-            if (type === 'to') { dataObj = localData.setupTo;
-                dbDoc = 'to'; } else if (type === 'duty') { dataObj = localData.setupDuty;
-                dbDoc = 'duty'; } else if (type === 'monthlyDuty') { dataObj = localData.setupMonthlyDuty;
-                dbDoc = 'monthlyDuty'; } else if (type === 'dutySpecific') { dataObj = localData.setupDutySpecific;
-                dbDoc = 'dutySpecific'; } else if (type === 'eventWeekly') { dataObj = localData.setupEventWeekly;
-                dbDoc = 'eventWeekly'; } else if (type === 'eventMonthly') { dataObj = localData.setupEventMonthly;
-                dbDoc = 'eventMonthly'; } else if (type === 'eventSpecific') { dataObj = localData.setupEventSpecific;
-                dbDoc = 'eventSpecific'; } else if (type === 'eventMisc') { dataObj = localData.setupEventMisc;
-                dbDoc = 'eventMisc'; }
+            if (type === 'to') { dataObj = localData.setupTo; dbDoc = 'to'; }
+            else if (type === 'duty') { dataObj = localData.setupDuty; dbDoc = 'duty'; }
+            else if (type === 'monthlyDuty') { dataObj = localData.setupMonthlyDuty; dbDoc = 'monthlyDuty'; }
+            else if (type === 'dutySpecific') { dataObj = localData.setupDutySpecific; dbDoc = 'dutySpecific'; }
+            else if (type === 'eventWeekly') { dataObj = localData.setupEventWeekly; dbDoc = 'eventWeekly'; }
+            else if (type === 'eventMonthly') { dataObj = localData.setupEventMonthly; dbDoc = 'eventMonthly'; }
+            else if (type === 'eventSpecific') { dataObj = localData.setupEventSpecific; dbDoc = 'eventSpecific'; }
+            else if (type === 'eventMisc') { dataObj = localData.setupEventMisc; dbDoc = 'eventMisc'; }
 
             if (subKey !== null && subKey !== undefined && subKey !== 'null') {
                 dataObj[station][subKey].splice(index, 1);
@@ -3803,8 +4170,7 @@
             displayMonthDate = new Date();
 
             let faultMonthFilter = document.getElementById('fault-month-filter');
-            if (faultMonthFilter) faultMonthFilter.value =
-            `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            if (faultMonthFilter) faultMonthFilter.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 
             let mainDateFilter = document.getElementById('main-event-date-filter');
             if (mainDateFilter) mainDateFilter.value = eventLogToday;
