@@ -11,6 +11,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- 引入 SheetJS 以實作 Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
         .table-responsive {
@@ -636,11 +638,19 @@
             <!-- ============ Fault Record ============ -->
             <div class="tab-pane fade" id="fault-tab">
                 <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-3">
-                        <label class="fw-bold mb-0">篩選月份:</label>
-                        <input type="month" id="fault-month-filter" class="form-control w-auto" onchange="renderFaults()">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <label class="fw-bold mb-0">顯示周期:</label>
+                        <div class="input-group input-group-sm w-auto">
+                            <span class="input-group-text bg-light border-secondary">由</span>
+                            <input type="date" id="fault-date-start" class="form-control border-secondary" onchange="updateFaultFilters()">
+                            <span class="input-group-text bg-light border-secondary">至</span>
+                            <input type="date" id="fault-date-end" class="form-control border-secondary" onchange="updateFaultFilters()">
+                        </div>
                     </div>
-                    <button class="btn btn-danger btn-custom" onclick="openModal('faultModal')"><i class="fas fa-plus"></i> 新增 Fault Record</button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success btn-custom shadow-sm" onclick="exportFaultsToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+                        <button class="btn btn-danger btn-custom shadow-sm" onclick="openModal('faultModal')"><i class="fas fa-plus"></i> 新增 Fault Record</button>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-custom table-hover">
@@ -649,38 +659,70 @@
                                 <th style="width: 10%;">
                                     <div class="d-flex flex-column align-items-start">
                                         <span>車站</span>
-                                        <select id="fault-station-filter" class="form-select form-select-sm mt-1 border-secondary" style="font-weight: normal; background-color: #f8f9fa;" onchange="renderFaults()">
-                                            <option value="">All</option>
-                                            <option value="ETS">ETS</option>
-                                            <option value="TST">TST</option>
-                                        </select>
+                                        <div class="dropdown w-100 mt-1">
+                                            <button class="btn btn-sm btn-light border-secondary dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="btn-filter-station">All</button>
+                                            <ul class="dropdown-menu p-2 text-dark shadow-sm" style="min-width:120px;">
+                                                <li><div class="form-check"><input class="form-check-input filter-cb-station" type="checkbox" value="ETS" onchange="updateFaultFilters()" id="cb-st-ets"><label class="form-check-label fw-bold" for="cb-st-ets">ETS</label></div></li>
+                                                <li><div class="form-check"><input class="form-check-input filter-cb-station" type="checkbox" value="TST" onchange="updateFaultFilters()" id="cb-st-tst"><label class="form-check-label fw-bold" for="cb-st-tst">TST</label></div></li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </th>
                                 <th style="width: 8%;">日期</th>
                                 <th style="width: 15%;">
                                     <div class="d-flex flex-column align-items-start">
                                         <span>Asset</span>
-                                        <select id="fault-asset-filter" class="form-select form-select-sm mt-1 border-secondary" style="font-weight: normal; background-color: #f8f9fa;" onchange="renderFaults()">
-                                            <option value="">All Assets</option>
-                                        </select>
+                                        <div class="dropdown w-100 mt-1">
+                                            <button class="btn btn-sm btn-light border-secondary dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="btn-filter-asset">All</button>
+                                            <ul class="dropdown-menu p-2 text-dark shadow-sm" id="menu-filter-asset" style="min-width:150px; max-height:250px; overflow-y:auto;">
+                                                <!-- dynamic -->
+                                            </ul>
+                                        </div>
                                     </div>
                                 </th>
-                                <th style="width: 20%;">Fault Description</th>
-                                <th style="width: 10%;">WO Number</th>
+                                <th style="width: 20%;">
+                                    <div class="d-flex flex-column align-items-start">
+                                        <span>Fault Description</span>
+                                        <input type="text" id="filter-desc-input" class="form-control form-control-sm mt-1 border-secondary" placeholder="Search..." onkeyup="updateFaultFilters()" style="width: 100%;">
+                                    </div>
+                                </th>
+                                <th style="width: 10%;">
+                                    <div class="d-flex flex-column align-items-start">
+                                        <span>WO Number</span>
+                                        <input type="text" id="filter-wo-input" class="form-control form-control-sm mt-1 border-secondary" placeholder="Search..." onkeyup="updateFaultFilters()" style="width: 100%;">
+                                    </div>
+                                </th>
                                 <th style="width: 12%;">
                                     <div class="d-flex flex-column align-items-start">
                                         <span>Status</span>
-                                        <select id="fault-status-filter" class="form-select form-select-sm mt-1 border-secondary" style="font-weight: normal; background-color: #f8f9fa;" onchange="renderFaults()">
-                                            <option value="">All Status</option>
-                                            <option value="Follow up">Follow up</option>
-                                            <option value="Completed">Completed</option>
-                                            <option value="Cancel/Void">Cancel/Void</option>
-                                            <option value="Refer">Refer</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
+                                        <div class="dropdown w-100 mt-1">
+                                            <button class="btn btn-sm btn-light border-secondary dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="btn-filter-status">All</button>
+                                            <ul class="dropdown-menu p-2 text-dark shadow-sm" style="min-width:140px;">
+                                                <li><div class="form-check"><input class="form-check-input filter-cb-status" type="checkbox" value="Follow up" onchange="updateFaultFilters()" id="cb-stat-fu"><label class="form-check-label text-warning fw-bold" for="cb-stat-fu">Follow up</label></div></li>
+                                                <li><div class="form-check"><input class="form-check-input filter-cb-status" type="checkbox" value="Completed" onchange="updateFaultFilters()" id="cb-stat-comp"><label class="form-check-label text-success fw-bold" for="cb-stat-comp">Completed</label></div></li>
+                                                <li><div class="form-check"><input class="form-check-input filter-cb-status" type="checkbox" value="Cancel/Void" onchange="updateFaultFilters()" id="cb-stat-cancel"><label class="form-check-label text-danger fw-bold" for="cb-stat-cancel">Cancel/Void</label></div></li>
+                                                <li><div class="form-check"><input class="form-check-input filter-cb-status" type="checkbox" value="Refer" onchange="updateFaultFilters()" id="cb-stat-ref"><label class="form-check-label text-info fw-bold" for="cb-stat-ref">Refer</label></div></li>
+                                                <li><div class="form-check"><input class="form-check-input filter-cb-status" type="checkbox" value="Pending" onchange="updateFaultFilters()" id="cb-stat-pen"><label class="form-check-label text-warning fw-bold" for="cb-stat-pen">Pending</label></div></li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </th>
-                                <th style="width: 18%;">Remark</th>
+                                <th style="width: 18%;">
+                                    <div class="d-flex flex-column align-items-start">
+                                        <span>Remark</span>
+                                        <div class="dropdown w-100 mt-1">
+                                            <button class="btn btn-sm btn-light border-secondary dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="btn-filter-remark">All</button>
+                                            <ul class="dropdown-menu p-2 text-dark shadow-sm" style="min-width:160px;">
+                                                <li>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input filter-cb-remark" type="checkbox" value="Light Fault" onchange="updateFaultFilters()" id="cb-rem-lf">
+                                                        <label class="form-check-label text-warning fw-bold" for="cb-rem-lf"><i class="fas fa-lightbulb"></i> Lighting Fault</label>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </th>
                                 <th style="width: 7%;">操作</th>
                             </tr>
                         </thead>
@@ -935,6 +977,25 @@
                             </div>
                         </div>
 
+                        <!-- Details Location Setup -->
+                        <div class="col-lg-12">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header text-dark fw-bold" style="background-color: #ffc107;"><i class="fas fa-map-marker-alt"></i> Details Location Setup (Lighting Fault)</div>
+                                <div class="card-body d-flex flex-column" style="min-height: 350px;">
+                                    <div class="form-check mb-3 pb-2 border-bottom">
+                                        <input class="form-check-input" type="checkbox" id="setup-loc-required" onchange="toggleLocRequired()">
+                                        <label class="form-check-label fw-bold text-danger" for="setup-loc-required">設定為「必須填寫」 (Light Fault Details Location mandatory)</label>
+                                    </div>
+                                    <div class="mb-3 bg-light p-2 rounded small fw-bold" id="setup-loc-breadcrumb" style="border: 1px solid #dee2e6;"></div>
+                                    <ul id="setup-loc-list" class="list-group list-group-flush mb-3 small flex-grow-1" style="max-height: 300px; overflow-y: auto;"></ul>
+                                    <div class="input-group input-group-sm mt-auto" id="setup-loc-add-container">
+                                        <input type="text" id="new-loc-name" class="form-control" placeholder="新增 Location...">
+                                        <button class="btn btn-warning text-dark fw-bold" onclick="addSetupLoc()"><i class="fas fa-plus"></i> 新增</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -1123,19 +1184,39 @@
                             <div class="col-6"><label class="form-label small fw-bold">WO Number</label><input type="text" id="fault-wo" class="form-control form-control-sm"></div>
                         </div>
                         <div class="mb-3"><label class="form-label small fw-bold">Fault Description</label><textarea id="fault-desc" class="form-control form-control-sm" rows="2"></textarea></div>
+                        
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="form-label small fw-bold mb-0">Remark</label>
                                 <div class="form-check m-0 d-flex align-items-center">
-                                    <input class="form-check-input mt-0 me-2" type="checkbox" id="fault-is-light-fault">
+                                    <input class="form-check-input mt-0 me-2" type="checkbox" id="fault-is-light-fault" onchange="toggleFaultLocation()">
                                     <label class="form-check-label small fw-bold text-dark" for="fault-is-light-fault">
                                         <i class="fas fa-lightbulb text-warning"></i> Light Fault
                                     </label>
                                 </div>
                             </div>
+                            
+                            <!-- Details Location Container -->
+                            <div id="fault-location-container" class="mb-2 p-3 border rounded bg-white shadow-sm" style="display: none; border-left: 4px solid #ffc107 !important;">
+                                <label id="fault-loc-req-label" class="form-label small fw-bold text-primary mb-2"><i class="fas fa-map-marker-alt"></i> Details Location (非必填)</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <select id="fault-loc-1" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(1)" style="min-width: 120px;"></select>
+                                    <select id="fault-loc-2" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(2)" style="display:none; min-width: 120px;"></select>
+                                    <select id="fault-loc-3" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(3)" style="display:none; min-width: 120px;"></select>
+                                    <select id="fault-loc-4" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(4)" style="display:none; min-width: 120px;"></select>
+                                    <select id="fault-loc-5" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(5)" style="display:none; min-width: 120px;"></select>
+                                    <select id="fault-loc-6" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(6)" style="display:none; min-width: 120px;"></select>
+                                    <select id="fault-loc-7" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(7)" style="display:none; min-width: 120px;"></select>
+                                    <select id="fault-loc-8" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(8)" style="display:none; min-width: 120px;"></select>
+                                    <select id="fault-loc-9" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(9)" style="display:none; min-width: 120px;"></select>
+                                    <select id="fault-loc-10" class="form-select form-select-sm w-auto flex-grow-1 border-primary" onchange="updateFaultLoc(10)" style="display:none; min-width: 120px;"></select>
+                                </div>
+                                <input type="text" id="fault-loc-psd" class="form-control form-control-sm mt-2 border-danger text-danger fw-bold" placeholder="請輸入 PSD 號碼" style="display:none;">
+                            </div>
+                            
                             <textarea id="fault-remark" class="form-control form-control-sm" rows="2"></textarea>
                         </div>
-                        <div class="mb-2"><label class="form-label small fw-bold">Status</label><select id="fault-status" class="form-select form-select-sm w-50"><option value="Follow up">Follow up</option><option value="Completed">Completed</option><option value="Cancel/Void">Cancel/Void</option><option value="Refer">Refer</option></select></div>
+                        <div class="mb-2"><label class="form-label small fw-bold">Status</label><select id="fault-status" class="form-select form-select-sm w-50"><option value="Follow up">Follow up</option><option value="Completed">Completed</option><option value="Cancel/Void">Cancel/Void</option><option value="Refer">Refer</option><option value="Pending">Pending</option></select></div>
                     </div>
                     <div class="modal-footer bg-light"><button type="button" class="btn btn-danger px-4 rounded-pill" onclick="saveFault()">儲存</button></div>
                 </div></div>
@@ -1150,7 +1231,6 @@
                         <input type="hidden" id="link-order">
                         <div class="mb-3"><label class="form-label small fw-bold">名稱 (Name)</label><input type="text" id="link-name" class="form-control form-control-sm" placeholder="輸入名稱"></div>
                         <div class="mb-3"><label class="form-label small fw-bold">超連結 (URL)</label><input type="url" id="link-url" class="form-control form-control-sm" placeholder="https://..."></div>
-                        <div class="mb-3"><label class="form-label small fw-bold">電腦檔案路徑 (File Path)</label><input type="text" id="link-path" class="form-control form-control-sm" placeholder="例如 C:\Users\Document.xlsx"></div>
                         <div class="row g-2 mb-2">
                             <div class="col-6">
                                 <label class="form-label small fw-bold">圖示 (Icon)</label>
@@ -1388,8 +1468,7 @@
         </div>
 
     </div><!-- end #main-app -->
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // ============================================================
         //  1. Firebase Configuration
@@ -1503,6 +1582,31 @@
             { name: '物品派發', color: 'warning' }
         ];
 
+        const defaultSetupFaultLocation = [
+            {
+                name: "TST",
+                children: [
+                    { name: "出口", children: [] },
+                    { name: "大堂(Up End)", children: [] },
+                    { name: "大堂 (Mid Con)", children: [] },
+                    { name: "大堂(Dn End)", children: [] },
+                    { name: "月台(Up End)", children: [] },
+                    { name: "月台(Mid Plat)", children: [] },
+                    { name: "月台(Dn End)", children: [] },
+                    { name: "月台(PSD)", children: [] },
+                    { name: "Others", children: [] }
+                ]
+            },
+            {
+                name: "ETS",
+                children: [
+                    { name: "大堂(West Con)", children: [] },
+                    { name: "大堂(East Con)", children: [] },
+                    { name: "月台(PSD)", children: [] }
+                ]
+            }
+        ];
+
         // ============================================================
         //  4. State
         // ============================================================
@@ -1526,7 +1630,9 @@
             setupEventMisc: defaultSetupEventMisc,
             setupPriority: defaultSetupPriority,
             setupFollowUpStatus: defaultSetupFollowUpStatus,
-            setupCbtCategories: defaultSetupCbtCategory
+            setupCbtCategories: defaultSetupCbtCategory,
+            setupFaultLocation: defaultSetupFaultLocation,
+            setupFaultLocationRequired: false
         };
 
         let currentViewingDateStr = getTodayStr();
@@ -1665,8 +1771,24 @@
                 dateSelectEvent.innerHTML += `<option value="last_friday">每月最後的星期五</option>`;
             }
 
+            // 初始化 Fault Record 日期範圍為本月
             let d = new Date();
-            document.getElementById('fault-month-filter').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            let y = d.getFullYear();
+            let m = String(d.getMonth() + 1).padStart(2, '0');
+            let lastDay = new Date(y, m, 0).getDate();
+            let startInput = document.getElementById('fault-date-start');
+            let endInput = document.getElementById('fault-date-end');
+            if(startInput) startInput.value = `${y}-${m}-01`;
+            if(endInput) endInput.value = `${y}-${m}-${lastDay}`;
+
+            // 加入 Tab Leave 的 Reset 功能
+            let faultTabEl = document.querySelector('a[href="#fault-tab"]');
+            if (faultTabEl) {
+                faultTabEl.addEventListener('hidden.bs.tab', function () {
+                    resetFaultFilters();
+                });
+            }
+
             let mainDateFilter = document.getElementById('main-event-date-filter');
             if (mainDateFilter) {
                 mainDateFilter.value = getEventLogLogicalDateStr();
@@ -1694,6 +1816,8 @@
                     'followUpStatus').set({ items: defaultSetupFollowUpStatus }); });
             db.collection('setup').doc('cbtCategory').get().then(doc => { if (!doc.exists) db.collection('setup').doc(
                     'cbtCategory').set({ items: defaultSetupCbtCategory }); });
+            db.collection('setup').doc('faultLocation').get().then(doc => { if (!doc.exists) db.collection('setup').doc(
+                    'faultLocation').set({ items: defaultSetupFaultLocation, isRequired: false }); });
 
             db.collection("handovers").onSnapshot(snap => {
                 localData.handovers = snap.docs.map(doc => { let d = doc.data();
@@ -1768,6 +1892,18 @@
                         .setupCbtCategories = doc.data().items || [];
                     renderAll();
                     updateCbtCategoryDropdown(); } });
+            db.collection("setup").doc("faultLocation").onSnapshot(doc => { 
+                if (doc.exists) { 
+                    let data = doc.data();
+                    localData.setupFaultLocation = data.items || [];
+                    localData.setupFaultLocationRequired = data.isRequired || false;
+                    
+                    let reqCb = document.getElementById('setup-loc-required');
+                    if (reqCb) reqCb.checked = localData.setupFaultLocationRequired;
+                    
+                    if(document.getElementById('setup-loc-list')) renderSetupLoc(); 
+                } 
+            });
 
             startClock();
         }
@@ -1808,9 +1944,16 @@
                 currentViewingDateStr = actualToday;
                 displayMonthDate = new Date();
                 let d = new Date();
-                let faultMonthFilter = document.getElementById('fault-month-filter');
-                if (faultMonthFilter) faultMonthFilter.value =
-                `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                // 若跨日，我們重設預設的日期搜尋器 (模仿舊版換月自動更新)
+                let y = d.getFullYear();
+                let m = String(d.getMonth() + 1).padStart(2, '0');
+                let lastDay = new Date(y, m, 0).getDate();
+                let startInput = document.getElementById('fault-date-start');
+                let endInput = document.getElementById('fault-date-end');
+                if(startInput && endInput) {
+                    startInput.value = `${y}-${m}-01`;
+                    endInput.value = `${y}-${m}-${lastDay}`;
+                }
                 needsRender = true;
             }
             if (logicalToday !== currentLogicalDateStr) {
@@ -2740,48 +2883,213 @@
         }
 
         // ---------- Faults ----------
-        function renderFaults() {
-            let filterMonthElement = document.getElementById('fault-month-filter');
-            let filterMonth = filterMonthElement ? filterMonthElement.value : '';
+        function getSelectedCheckboxes(className) {
+            return Array.from(document.querySelectorAll('.' + className + ':checked')).map(cb => cb.value);
+        }
+
+        function updateFaultFilters() {
+            renderFaults();
+        }
+
+        function resetFaultFilters() {
+            let d = new Date();
+            let y = d.getFullYear();
+            let m = String(d.getMonth() + 1).padStart(2, '0');
+            let lastDay = new Date(y, m, 0).getDate();
+            
+            let startInput = document.getElementById('fault-date-start');
+            let endInput = document.getElementById('fault-date-end');
+            if(startInput) startInput.value = `${y}-${m}-01`;
+            if(endInput) endInput.value = `${y}-${m}-${lastDay}`;
+            
+            document.querySelectorAll('.filter-cb-station, .filter-cb-status, .filter-cb-asset, .filter-cb-remark').forEach(cb => cb.checked = false);
+            
+            // 同時清除文字搜尋框
+            let descInput = document.getElementById('filter-desc-input');
+            if(descInput) descInput.value = '';
+            let woInput = document.getElementById('filter-wo-input');
+            if(woInput) woInput.value = '';
+
+            renderFaults();
+        }
+
+        function filterByLightFault(e) {
+            if(e) e.stopPropagation();
+            let cb = document.getElementById('cb-rem-lf');
+            if(cb) {
+                cb.checked = true;
+                updateFaultFilters();
+            }
+        }
+
+        function exportFaultsToExcel() {
+            let startFilter = document.getElementById('fault-date-start').value || '';
+            let endFilter = document.getElementById('fault-date-end').value || '';
+            let selectedStations = getSelectedCheckboxes('filter-cb-station');
+            let selectedStatuses = getSelectedCheckboxes('filter-cb-status');
+            let selectedAssets = getSelectedCheckboxes('filter-cb-asset');
+            let selectedRemarks = getSelectedCheckboxes('filter-cb-remark');
+
+            // 取得輸入搜尋條件
+            let descFilter = document.getElementById('filter-desc-input') ? document.getElementById('filter-desc-input').value.toLowerCase().trim() : '';
+            let woFilter = document.getElementById('filter-wo-input') ? document.getElementById('filter-wo-input').value.toLowerCase().trim() : '';
+
             let filtered = localData.faults || [];
-
-            if (filterMonth) {
-                filtered = filtered.filter(f => f.date.startsWith(filterMonth));
-            }
             
-            let stationFilterElement = document.getElementById('fault-station-filter');
-            let stationFilter = stationFilterElement ? stationFilterElement.value : '';
-
-            let assetFilterElement = document.getElementById('fault-asset-filter');
-            let assetFilter = assetFilterElement ? assetFilterElement.value : '';
-            
-            if (stationFilter) {
-                filtered = filtered.filter(f => f.station === stationFilter);
-            }
-
-            if (assetFilterElement) {
-                let uniqueAssets = [...new Set(filtered.map(f => (f.asset || '').trim()).filter(a => a !== ''))].sort();
-                let assetHTML = '<option value="">All Assets</option>';
-                uniqueAssets.forEach(a => {
-                    assetHTML += `<option value="${a}" ${assetFilter === a ? 'selected' : ''}>${a}</option>`;
-                });
-                assetFilterElement.innerHTML = assetHTML;
-            }
-
-            let statusFilterElement = document.getElementById('fault-status-filter');
-            let statusFilter = statusFilterElement ? statusFilterElement.value : '';
-
-            if (assetFilter) {
-                filtered = filtered.filter(f => (f.asset || '').trim() === assetFilter);
-            }
-            if (statusFilter) {
+            if (startFilter) filtered = filtered.filter(f => f.date >= startFilter);
+            if (endFilter) filtered = filtered.filter(f => f.date <= endFilter);
+            if (selectedStations.length > 0) filtered = filtered.filter(f => selectedStations.includes(f.station));
+            if (selectedAssets.length > 0) filtered = filtered.filter(f => selectedAssets.includes((f.asset || '').trim()));
+            if (selectedStatuses.length > 0) {
                 filtered = filtered.filter(f => {
                     let s = f.status || 'Follow up';
-                    return s.toLowerCase() === statusFilter.toLowerCase();
+                    return selectedStatuses.includes(s);
                 });
             }
+            if (selectedRemarks.includes('Light Fault')) {
+                filtered = filtered.filter(f => f.isLightFault === true);
+            }
+            // 套用輸入搜尋
+            if (descFilter) {
+                filtered = filtered.filter(f => (f.desc || '').toLowerCase().includes(descFilter));
+            }
+            if (woFilter) {
+                filtered = filtered.filter(f => (f.wo || '').toLowerCase().includes(woFilter));
+            }
 
-            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (filtered.length === 0) {
+                alert('目前沒有符合條件的 Fault Record 可供匯出。');
+                return;
+            }
+
+            // 日期降序，同日期 createdAt 降序
+            filtered.sort((a, b) => {
+                let dateDiff = new Date(b.date) - new Date(a.date);
+                if (dateDiff !== 0) return dateDiff;
+                
+                let timeA = a.createdAt || 0;
+                let timeB = b.createdAt || 0;
+                return timeB - timeA;
+            });
+
+            let ws_data = [["Station", "Date", "Asset", "Fault Description", "WO Number", "Status", "Remark"]];
+            filtered.forEach(f => {
+                let remarkText = f.remark || '';
+                if (f.isLightFault) {
+                    let locText = f.faultLocationText ? `[Location: ${f.faultLocationText}] ` : '';
+                    remarkText = '[Lighting Fault] ' + locText + remarkText;
+                }
+                
+                ws_data.push([
+                    f.station || '',
+                    f.date || '',
+                    f.asset || '',
+                    f.desc || '',
+                    f.wo || '',
+                    f.status || 'Follow up',
+                    remarkText
+                ]);
+            });
+
+            let wb = XLSX.utils.book_new();
+            let ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Fault Records");
+            
+            let filename = "Fault_Records";
+            if(startFilter && endFilter) filename += `_${startFilter}_to_${endFilter}`;
+            filename += ".xlsx";
+            
+            XLSX.writeFile(wb, filename);
+        }
+
+        function renderFaults() {
+            let startFilter = document.getElementById('fault-date-start') ? document.getElementById('fault-date-start').value : '';
+            let endFilter = document.getElementById('fault-date-end') ? document.getElementById('fault-date-end').value : '';
+            
+            // 取得輸入搜尋條件
+            let descFilter = document.getElementById('filter-desc-input') ? document.getElementById('filter-desc-input').value.toLowerCase().trim() : '';
+            let woFilter = document.getElementById('filter-wo-input') ? document.getElementById('filter-wo-input').value.toLowerCase().trim() : '';
+
+            let filtered = localData.faults || [];
+
+            // 1. 日期篩選
+            if (startFilter) {
+                filtered = filtered.filter(f => f.date >= startFilter);
+            }
+            if (endFilter) {
+                filtered = filtered.filter(f => f.date <= endFilter);
+            }
+
+            // 2. 獲取已選項目
+            let selectedStations = getSelectedCheckboxes('filter-cb-station');
+            let selectedStatuses = getSelectedCheckboxes('filter-cb-status');
+            let selectedAssets = getSelectedCheckboxes('filter-cb-asset');
+            let selectedRemarks = getSelectedCheckboxes('filter-cb-remark');
+
+            // 3. 更新 Asset Dropdown 選項
+            let tempFilteredForAsset = filtered;
+            if (selectedStations.length > 0) {
+                tempFilteredForAsset = tempFilteredForAsset.filter(f => selectedStations.includes(f.station));
+            }
+            
+            let uniqueAssets = [...new Set(tempFilteredForAsset.map(f => (f.asset || '').trim()).filter(a => a !== ''))].sort();
+            let assetMenu = document.getElementById('menu-filter-asset');
+            if (assetMenu) {
+                let newAssetHTML = '';
+                uniqueAssets.forEach(a => {
+                    let checked = selectedAssets.includes(a) ? 'checked' : '';
+                    let safeId = 'cb-asset-' + a.replace(/[^a-zA-Z0-9]/g, '');
+                    newAssetHTML += `<li><div class="form-check"><input class="form-check-input filter-cb-asset" type="checkbox" value="${a}" onchange="updateFaultFilters()" id="${safeId}" ${checked}><label class="form-check-label fw-bold" for="${safeId}">${a}</label></div></li>`;
+                });
+                if(uniqueAssets.length === 0) newAssetHTML = '<li class="text-muted small text-center py-2">無資料</li>';
+                assetMenu.innerHTML = newAssetHTML;
+            }
+            selectedAssets = getSelectedCheckboxes('filter-cb-asset');
+
+            // 4. 套用其他篩選
+            if (selectedStations.length > 0) {
+                filtered = filtered.filter(f => selectedStations.includes(f.station));
+            }
+            if (selectedAssets.length > 0) {
+                filtered = filtered.filter(f => selectedAssets.includes((f.asset || '').trim()));
+            }
+            if (selectedStatuses.length > 0) {
+                filtered = filtered.filter(f => {
+                    let s = f.status || 'Follow up';
+                    return selectedStatuses.includes(s);
+                });
+            }
+            if (selectedRemarks.includes('Light Fault')) {
+                filtered = filtered.filter(f => f.isLightFault === true);
+            }
+            
+            // 套用輸入搜尋
+            if (descFilter) {
+                filtered = filtered.filter(f => (f.desc || '').toLowerCase().includes(descFilter));
+            }
+            if (woFilter) {
+                filtered = filtered.filter(f => (f.wo || '').toLowerCase().includes(woFilter));
+            }
+
+            // 更新 Button 文字
+            let btnStation = document.getElementById('btn-filter-station');
+            if(btnStation) btnStation.innerText = selectedStations.length > 0 ? `Selected (${selectedStations.length})` : 'All';
+            let btnAsset = document.getElementById('btn-filter-asset');
+            if(btnAsset) btnAsset.innerText = selectedAssets.length > 0 ? `Selected (${selectedAssets.length})` : 'All';
+            let btnStatus = document.getElementById('btn-filter-status');
+            if(btnStatus) btnStatus.innerText = selectedStatuses.length > 0 ? `Selected (${selectedStatuses.length})` : 'All';
+            let btnRemark = document.getElementById('btn-filter-remark');
+            if(btnRemark) btnRemark.innerText = selectedRemarks.length > 0 ? `Selected (${selectedRemarks.length})` : 'All';
+
+            // 5. 排序：按日期降序排列，同日期的最新的 record 在最頂 (根據 createdAt)[cite: 2]
+            filtered.sort((a, b) => {
+                let dateDiff = new Date(b.date) - new Date(a.date);
+                if (dateDiff !== 0) return dateDiff;
+                
+                let timeA = a.createdAt || 0;
+                let timeB = b.createdAt || 0;
+                return timeB - timeA;
+            });
 
             let html = '';
             filtered.forEach(f => {
@@ -2809,8 +3117,10 @@
 
                 let remarkDisplay = f.remark || '';
                 if (f.isLightFault) {
+                    let locStr = f.faultLocationText ? `<span class="fw-bold text-primary">${f.faultLocationText}</span><br>` : '';
                     remarkDisplay =
-                        `<span class="badge bg-warning text-dark target-alert mb-1 d-inline-block shadow-sm" style="border:1px solid #ffc107;"><i class="fas fa-lightbulb"></i> Lighting Fault</span><br>` +
+                        `<span class="badge bg-warning text-dark target-alert mb-1 d-inline-block shadow-sm" style="border:1px solid #ffc107; cursor:pointer;" onclick="filterByLightFault(event)" title="點擊只顯示 Light Fault"><i class="fas fa-lightbulb"></i> Lighting Fault</span><br>` +
+                        locStr +
                         remarkDisplay;
                 }
 
@@ -2841,6 +3151,230 @@
             db.collection('faults').doc(id).update({ status: newStatus });
         }
 
+        // ---------- Fault Location Setup & Logic ----------
+        let currentLocSetupPath = [];
+
+        function renderSetupLoc(path = null) {
+            if(path !== null) currentLocSetupPath = path;
+
+            let currentNodes = localData.setupFaultLocation || [];
+            let breadcrumbHtml = `<a href="#" onclick="renderSetupLoc([]); return false;" class="text-decoration-none">Root</a>`;
+
+            let pathNodes = [];
+            for(let i=0; i<currentLocSetupPath.length; i++) {
+                pathNodes.push(currentLocSetupPath[i]);
+                let nodeName = currentNodes[currentLocSetupPath[i]] ? currentNodes[currentLocSetupPath[i]].name : 'Unknown';
+                breadcrumbHtml += ` <i class="fas fa-chevron-right text-muted small mx-1"></i> <a href="#" onclick="renderSetupLoc([${pathNodes.join(',')}]); return false;" class="text-decoration-none">${nodeName}</a>`;
+                currentNodes = currentNodes[currentLocSetupPath[i]] ? (currentNodes[currentLocSetupPath[i]].children || []) : [];
+            }
+
+            let bcEl = document.getElementById('setup-loc-breadcrumb');
+            if(bcEl) bcEl.innerHTML = breadcrumbHtml;
+
+            let ul = document.getElementById('setup-loc-list');
+            if(!ul) return;
+            ul.innerHTML = '';
+            if(!currentNodes || currentNodes.length === 0) {
+                ul.innerHTML = '<li class="list-group-item text-center text-muted py-3">此層級無子項目</li>';
+            } else {
+                currentNodes.forEach((node, idx) => {
+                    // 支援10層
+                    let level = currentLocSetupPath.length + 1;
+                    let enterBtn = level < 10 ? `<button class="btn btn-sm btn-outline-primary py-0 px-2 me-2" onclick="enterSetupLoc(${idx})"><i class="fas fa-level-down-alt"></i> 下一級</button>` : '';
+                    ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 border-bottom">
+                        <span class="fw-bold text-dark">${node.name}</span>
+                        <div class="text-nowrap">
+                            ${enterBtn}
+                            <i class="fas fa-arrow-up text-secondary me-2" style="cursor:pointer" onclick="moveSetupLoc(${idx}, -1)"></i>
+                            <i class="fas fa-arrow-down text-secondary me-3" style="cursor:pointer" onclick="moveSetupLoc(${idx}, 1)"></i>
+                            <i class="fas fa-edit text-primary me-2" style="cursor:pointer" onclick="editSetupLoc(${idx})"></i>
+                            <i class="fas fa-times-circle text-danger" style="cursor:pointer" onclick="deleteSetupLoc(${idx})"></i>
+                        </div>
+                    </li>`;
+                });
+            }
+
+            let addContainer = document.getElementById('setup-loc-add-container');
+            if(addContainer) {
+                if(currentLocSetupPath.length >= 10) {
+                    addContainer.style.display = 'none';
+                } else {
+                    addContainer.style.display = 'flex';
+                }
+            }
+        }
+
+        function enterSetupLoc(idx) {
+            currentLocSetupPath.push(idx);
+            renderSetupLoc();
+        }
+
+        function addSetupLoc() {
+            let name = document.getElementById('new-loc-name').value.trim();
+            if(!name) return;
+
+            let data = JSON.parse(JSON.stringify(localData.setupFaultLocation));
+            let target = getLocTargetArr(data, currentLocSetupPath);
+            target.push({ name: name, children: [] });
+
+            db.collection('setup').doc('faultLocation').set({ items: data }, { merge: true }).then(() => {
+                let input = document.getElementById('new-loc-name');
+                if(input) input.value = '';
+            });
+        }
+        
+        function toggleLocRequired() {
+            let isReq = document.getElementById('setup-loc-required').checked;
+            db.collection('setup').doc('faultLocation').set({ isRequired: isReq }, { merge: true });
+        }
+
+        function getLocTargetArr(data, path) {
+            let curr = data;
+            for(let i=0; i<path.length; i++) {
+                if(!curr[path[i]]) return curr;
+                if(!curr[path[i]].children) curr[path[i]].children = [];
+                curr = curr[path[i]].children;
+            }
+            return curr;
+        }
+
+        function moveSetupLoc(idx, direction) {
+            let data = JSON.parse(JSON.stringify(localData.setupFaultLocation));
+            let target = getLocTargetArr(data, currentLocSetupPath);
+            let newIdx = idx + direction;
+            if(newIdx < 0 || newIdx >= target.length) return;
+
+            let temp = target[idx];
+            target[idx] = target[newIdx];
+            target[newIdx] = temp;
+
+            db.collection('setup').doc('faultLocation').set({ items: data }, { merge: true });
+        }
+
+        function editSetupLoc(idx) {
+            let data = JSON.parse(JSON.stringify(localData.setupFaultLocation));
+            let target = getLocTargetArr(data, currentLocSetupPath);
+            let newName = prompt("請修改 Location 名稱:", target[idx].name);
+            if(newName !== null && newName.trim() !== "") {
+                target[idx].name = newName.trim();
+                db.collection('setup').doc('faultLocation').set({ items: data }, { merge: true });
+            }
+        }
+
+        function deleteSetupLoc(idx) {
+            if(!confirm("確定要刪除此 Location 及其所有子項目嗎？")) return;
+            let data = JSON.parse(JSON.stringify(localData.setupFaultLocation));
+            let target = getLocTargetArr(data, currentLocSetupPath);
+            target.splice(idx, 1);
+            db.collection('setup').doc('faultLocation').set({ items: data }, { merge: true });
+        }
+
+        function toggleFaultLocation() {
+            let lfCheckbox = document.getElementById('fault-is-light-fault');
+            let isLightFault = lfCheckbox ? lfCheckbox.checked : false;
+            let container = document.getElementById('fault-location-container');
+            let reqLabel = document.getElementById('fault-loc-req-label');
+            
+            if(reqLabel) {
+                if(localData.setupFaultLocationRequired) {
+                    reqLabel.innerHTML = '<i class="fas fa-map-marker-alt"></i> Details Location (必填)';
+                    reqLabel.className = 'form-label small fw-bold text-danger mb-2';
+                } else {
+                    reqLabel.innerHTML = '<i class="fas fa-map-marker-alt"></i> Details Location (非必填)';
+                    reqLabel.className = 'form-label small fw-bold text-primary mb-2';
+                }
+            }
+            
+            if(container) {
+                container.style.display = isLightFault ? 'block' : 'none';
+            }
+            
+            if(isLightFault) {
+                let sel1 = document.getElementById('fault-loc-1');
+                if(sel1 && sel1.options.length <= 1) {
+                    populateFaultLocDropdown(1, localData.setupFaultLocation);
+                }
+            }
+        }
+
+        function getFaultLocNode(pathIndices) {
+            let current = localData.setupFaultLocation || [];
+            for(let i=0; i<pathIndices.length; i++) {
+                if(!current[pathIndices[i]]) return null;
+                current = current[pathIndices[i]].children;
+            }
+            return current;
+        }
+
+        function populateFaultLocDropdown(level, nodes) {
+            let sel = document.getElementById('fault-loc-' + level);
+            if(!sel) return;
+            sel.innerHTML = '<option value="">--請選擇--</option>';
+            if(nodes && nodes.length > 0) {
+                nodes.forEach((n, idx) => {
+                    sel.innerHTML += `<option value="${idx}">${n.name}</option>`;
+                });
+                sel.style.display = 'block';
+            } else {
+                sel.style.display = 'none';
+            }
+            
+            // hide subsequent levels (up to 10)
+            for(let i = level + 1; i <= 10; i++) {
+                let subSel = document.getElementById('fault-loc-' + i);
+                if(subSel) {
+                    subSel.style.display = 'none';
+                    subSel.value = '';
+                }
+            }
+            checkPSDInput();
+        }
+
+        function updateFaultLoc(level) {
+            let sel = document.getElementById('fault-loc-' + level);
+            if(!sel) return;
+            let val = sel.value;
+            checkPSDInput();
+
+            if(val === '') {
+                for(let i = level + 1; i <= 10; i++) {
+                    let subSel = document.getElementById('fault-loc-' + i);
+                    if(subSel) {
+                        subSel.style.display = 'none';
+                        subSel.value = '';
+                    }
+                }
+                return;
+            }
+
+            if(level < 10) {
+                let path = [];
+                for(let i = 1; i <= level; i++) {
+                    let s = document.getElementById('fault-loc-' + i);
+                    if(s && s.value !== '') {
+                        path.push(parseInt(s.value));
+                    }
+                }
+                let children = getFaultLocNode(path);
+                populateFaultLocDropdown(level + 1, children);
+            }
+        }
+
+        function checkPSDInput() {
+            let hasPSD = false;
+            for(let i=1; i<=10; i++) {
+                let sel = document.getElementById('fault-loc-' + i);
+                if(sel && sel.style.display !== 'none' && sel.selectedIndex > 0) {
+                    let text = sel.options[sel.selectedIndex].text;
+                    if(text.includes('PSD')) hasPSD = true;
+                }
+            }
+            let psdInput = document.getElementById('fault-loc-psd');
+            if(psdInput) {
+                psdInput.style.display = hasPSD ? 'block' : 'none';
+            }
+        }
+
         // ---------- Links ----------
         function renderLinks() {
             let container = document.getElementById('links-container');
@@ -2854,11 +3388,6 @@
                 if (link.url) {
                     let formattedUrl = link.url.startsWith('http') ? link.url : 'http://' + link.url;
                     clickAction = `window.open('${formattedUrl}', '_blank')`;
-                } else if (link.path) {
-                    let encoded = encodeURIComponent(link.path).replace(/'/g, "%27");
-                    let safePath = link.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                    clickAction =
-                        `copyLogContent('${encoded}', null); alert('檔案路徑已複製，請自行於檔案總管貼上開啟:\\n${safePath}')`;
                 }
                 html += `
                 <div class="col-sm-6 col-md-4 col-lg-3">
@@ -2997,7 +3526,6 @@
             if (index < 0) return;
             let newIndex = index + direction;
             if (newIndex < 0 || newIndex >= filtered.length) return;
-            // 不允許跨越 完成/未完成 邊界交換
             if (filtered[index].isCompleted !== filtered[newIndex].isCompleted) return;
 
             let currentItem = filtered[index];
@@ -3090,6 +3618,31 @@
         // ============================================================
         //  10. Modal Open / Save / Edit
         // ============================================================
+        function resetFaultModalInputs() {
+            document.getElementById('fault-id').value = '';
+            document.getElementById('fault-date').value = currentViewingDateStr;
+            document.getElementById('fault-station').value = 'ETS';
+            document.getElementById('fault-asset').value = '';
+            document.getElementById('fault-desc').value = '';
+            document.getElementById('fault-wo').value = '';
+            document.getElementById('fault-remark').value = '';
+            document.getElementById('fault-status').value = 'Follow up';
+            let lfCheckbox = document.getElementById('fault-is-light-fault');
+            if (lfCheckbox) lfCheckbox.checked = false;
+            
+            for(let i=1; i<=10; i++) {
+                let sel = document.getElementById('fault-loc-' + i);
+                if(sel) {
+                    sel.value = '';
+                    if(i > 1) sel.style.display = 'none';
+                }
+            }
+            let psd = document.getElementById('fault-loc-psd');
+            if(psd) { psd.value = ''; psd.style.display = 'none'; }
+            
+            toggleFaultLocation(); 
+        }
+
         function openModal(modalId, forcedDate = null) {
             let d = forcedDate || currentViewingDateStr;
 
@@ -3118,16 +3671,7 @@
                 document.getElementById('note-content').value = '';
                 document.getElementById('note-link').value = '';
             } else if (modalId === 'faultModal') {
-                document.getElementById('fault-id').value = '';
-                document.getElementById('fault-date').value = d;
-                document.getElementById('fault-station').value = 'ETS';
-                document.getElementById('fault-asset').value = '';
-                document.getElementById('fault-desc').value = '';
-                document.getElementById('fault-wo').value = '';
-                document.getElementById('fault-remark').value = '';
-                document.getElementById('fault-status').value = 'Follow up';
-                let lfCheckbox = document.getElementById('fault-is-light-fault');
-                if (lfCheckbox) lfCheckbox.checked = false;
+                resetFaultModalInputs();
             } else if (modalId === 'specialModal') {
                 document.getElementById('sp-id').value = '';
                 document.getElementById('sp-order').value = Date.now();
@@ -3142,7 +3686,6 @@
                 document.getElementById('link-order').value = Date.now();
                 document.getElementById('link-name').value = '';
                 document.getElementById('link-url').value = '';
-                document.getElementById('link-path').value = '';
                 document.getElementById('link-icon').value = 'fas fa-link';
                 document.getElementById('link-color').value = 'primary';
             } else if (modalId === 'phoneModal') {
@@ -3446,8 +3989,12 @@
             document.getElementById('fault-wo').value = item.wo || '';
             document.getElementById('fault-status').value = item.status || 'Follow up';
             document.getElementById('fault-remark').value = item.remark || '';
+            
             let lfCheckbox = document.getElementById('fault-is-light-fault');
-            if (lfCheckbox) lfCheckbox.checked = item.isLightFault || false;
+            if (lfCheckbox) {
+                lfCheckbox.checked = item.isLightFault || false;
+            }
+            toggleFaultLocation();
             modals.fault.show();
         }
 
@@ -3463,14 +4010,45 @@
             let lfCheckbox = document.getElementById('fault-is-light-fault');
             let isLightFault = lfCheckbox ? lfCheckbox.checked : false;
 
-            if (!date || !desc) { alert("請至少填寫日期 (Date) 和 描述 (Description)！"); return; }
+            // 組合 Details Location (1 至 10 級)
+            let locTexts = [];
+            for(let i = 1; i <= 10; i++) {
+                let sel = document.getElementById('fault-loc-' + i);
+                if(sel && sel.style.display !== 'none' && sel.selectedIndex > 0) {
+                    locTexts.push(sel.options[sel.selectedIndex].text);
+                }
+            }
+            let faultLocationText = locTexts.join(' / ');
+            
+            let psdInput = document.getElementById('fault-loc-psd');
+            if(psdInput && psdInput.style.display !== 'none' && psdInput.value.trim() !== '') {
+                faultLocationText += ' (PSD: ' + psdInput.value.trim() + ')';
+            }
 
-            let faultData = { date, station, asset, desc, wo, status, remark, isLightFault };
+            if (!date || !desc) { 
+                alert("請至少填寫日期 (Date) 和 描述 (Description)！"); 
+                return; 
+            }
+
+            // 判斷 Light Fault 是否強制必填
+            if (isLightFault && localData.setupFaultLocationRequired && locTexts.length === 0) {
+                alert("系統已設定 Details Location 為必填，請選擇 Light Fault Location！");
+                return;
+            }
+
+            let faultData = { date, station, asset, desc, wo, status, remark, isLightFault, faultLocationText };
 
             if (id) {
-                db.collection('faults').doc(id).update(faultData).then(() => modals.fault.hide());
+                db.collection('faults').doc(id).update(faultData).then(() => {
+                    resetFaultModalInputs();
+                    modals.fault.hide();
+                });
             } else {
-                db.collection('faults').add(faultData).then(() => modals.fault.hide());
+                faultData.createdAt = Date.now();
+                db.collection('faults').add(faultData).then(() => {
+                    resetFaultModalInputs();
+                    modals.fault.hide();
+                });
             }
         }
 
@@ -3482,7 +4060,6 @@
                 order: parseInt(document.getElementById('link-order').value) || Date.now(),
                 name: document.getElementById('link-name').value,
                 url: document.getElementById('link-url').value,
-                path: document.getElementById('link-path').value,
                 icon: document.getElementById('link-icon').value,
                 color: document.getElementById('link-color').value
             };
@@ -3496,7 +4073,6 @@
                 document.getElementById('link-order').value = item.order;
                 document.getElementById('link-name').value = item.name;
                 document.getElementById('link-url').value = item.url || '';
-                document.getElementById('link-path').value = item.path || '';
                 document.getElementById('link-icon').value = item.icon || 'fas fa-link';
                 document.getElementById('link-color').value = item.color || 'primary';
                 modals.link.show();
@@ -3564,9 +4140,8 @@
 
             // 檢查重疊 (Overlap logic)
             let overlap = localData.meetings.some(m => {
-                if (m.id === id) return false; // 排除自己
+                if (m.id === id) return false; 
                 if (m.date !== date) return false;
-                // 新時段的開始時間 < 舊時段的結束時間 且 新時段的結束時間 > 舊時段的開始時間
                 return (startTime < m.endTime) && (endTime > m.startTime);
             });
 
@@ -3578,7 +4153,6 @@
             let item = { id, date, startTime, endTime, applicant, email, purpose, remark };
             let existing = localData.meetings.find(i => i.id === id);
             
-            // 保持原有的 Complete 狀態
             item.isCompleted = existing ? (existing.isCompleted || false) : false;
 
             if (id && existing) {
@@ -3643,7 +4217,9 @@
                 if (val) {
                     let data = localData.setupTo;
                     data[station].push(val);
-                    db.collection("setup").doc("to").set(data).then(() => { input.value = ''; });
+                    db.collection("setup").doc("to").set(data).then(() => { 
+                        input.value = ''; // Reset Input
+                    });
                 }
             }
         }
@@ -3739,8 +4315,8 @@
             if (!dataObj[st][key]) dataObj[st][key] = [];
             dataObj[st][key].push(val);
             db.collection("setup").doc(dbDoc).set(dataObj).then(() => {
-                input.value = '';
-                document.getElementById('new-duty-shift').value = '';
+                input.value = ''; // Reset Input
+                document.getElementById('new-duty-shift').value = ''; // Reset Select
                 renderSetupDuty();
             });
         }
@@ -3948,6 +4524,7 @@
             }
 
             db.collection("setup").doc(dbDoc).set(dataToUpdate).then(() => {
+                // Reset inputs to default after save
                 document.getElementById('new-event-shift').value = '';
                 document.getElementById('new-event-time').value = '';
                 document.getElementById('new-event-category').value = '';
@@ -4015,7 +4592,8 @@
             if (val) {
                 dataArr.push({ name: val, color: color });
                 db.collection("setup").doc(type).set({ items: dataArr }).then(() => {
-                    nameInput.value = '';
+                    nameInput.value = ''; // Reset Input
+                    colorInput.value = 'primary'; // Reset Selection to Default
                 });
             }
         }
