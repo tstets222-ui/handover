@@ -507,6 +507,7 @@
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#fault-tab"><i class="fas fa-tools"></i> Fault Record</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#meeting-tab" onclick="resetMeetingView()"><i class="fas fa-handshake"></i> ETS Meeting Room Booking</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#links-tab"><i class="fas fa-link"></i> Useful Links</a></li>
+            <li class="nav-item"><a class="nav-link" id="password-tab-link" href="#password-tab" onclick="checkPasswordAndGoToStationPassword(event)"><i class="fas fa-key"></i> 車站系統密碼</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#phone-tab"><i class="fas fa-address-book"></i> 常用電話簿</a></li>
             <li class="nav-item"><a class="nav-link" id="setup-tab-link" href="#setup-tab" onclick="checkPasswordAndGoToSetup(event)"><i class="fas fa-cogs"></i> Data Setup</a></li>
         </ul>
@@ -572,8 +573,9 @@
 
             <!-- ============ 交更事項一覽 (日曆) ============ -->
             <div class="tab-pane fade" id="calendar-tab">
-                <div class="d-flex gap-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
                     <button class="btn btn-custom btn-add" onclick="openModal('handoverModal')"><i class="fas fa-plus-circle"></i> 新增交更事項</button>
+                    <div class="alert alert-warning py-2 px-3 mb-0 small fw-bold shadow-sm border-warning"><i class="fas fa-info-circle text-danger me-1"></i> 系統提示：交更事項資料只會保存 2 年，逾期資料將自動刪除以防止儲存空間爆滿。</div>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm flex-wrap gap-3">
                     <button class="btn btn-outline-primary" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i> 上個月</button>
@@ -652,6 +654,7 @@
                         <button class="btn btn-danger btn-custom shadow-sm" onclick="openModal('faultModal')"><i class="fas fa-plus"></i> 新增 Fault Record</button>
                     </div>
                 </div>
+                <div class="alert alert-warning py-2 px-3 mb-3 small fw-bold shadow-sm border-warning"><i class="fas fa-info-circle text-danger me-1"></i> 系統提示：Fault Record 資料只會保存 2 年，逾期資料將自動刪除以防止儲存空間爆滿。</div>
                 <div class="table-responsive">
                     <table class="table table-custom table-hover">
                         <thead>
@@ -784,6 +787,45 @@
                     <button class="btn btn-primary btn-custom" onclick="openModal('linkModal')"><i class="fas fa-plus"></i> 新增 Link</button>
                 </div>
                 <div class="row g-3" id="links-container"></div>
+            </div>
+
+            <!-- ============ 車站系統密碼 ============ -->
+            <div class="tab-pane fade" id="password-tab">
+                <div class="bg-white p-3 rounded shadow-sm mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h4 class="mb-0 text-dark fw-bold"><i class="fas fa-key text-warning"></i> 車站系統密碼</h4>
+                    <ul class="nav nav-pills gap-2" id="stationPasswordSubTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="btn btn-custom text-white active" id="subtab-btn-tst" data-bs-toggle="pill" data-bs-target="#subtab-tst-pwd" type="button" role="tab" style="background-color: var(--tst-color);" onclick="setActivePasswordStation('尖沙咀站')">
+                                <i class="fas fa-subway me-1"></i> 尖沙咀站系統密碼
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="btn btn-custom text-white" id="subtab-btn-ets" data-bs-toggle="pill" data-bs-target="#subtab-ets-pwd" type="button" role="tab" style="background-color: var(--ets-color); opacity: 0.65;" onclick="setActivePasswordStation('尖東站')">
+                                <i class="fas fa-train me-1"></i> 尖東站系統密碼
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content" id="stationPasswordSubTabContent">
+                    <!-- 尖沙咀站系統密碼 子頁面 -->
+                    <div class="tab-pane fade show active" id="subtab-tst-pwd" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded shadow-sm text-white" style="background: linear-gradient(135deg, var(--tst-color), #ff4d4d);">
+                            <h5 class="mb-0 fw-bold"><i class="fas fa-key me-2"></i> 尖沙咀站系統密碼</h5>
+                            <button class="btn btn-light btn-custom fw-bold" style="color: var(--tst-color);" onclick="openStationPasswordModal('尖沙咀站')"><i class="fas fa-plus"></i> 新增車站密碼</button>
+                        </div>
+                        <div class="row g-2" id="tst-station-passwords-container"></div>
+                    </div>
+
+                    <!-- 尖東站系統密碼 子頁面 -->
+                    <div class="tab-pane fade" id="subtab-ets-pwd" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded shadow-sm text-white" style="background: linear-gradient(135deg, var(--ets-color), #a83c1b);">
+                            <h5 class="mb-0 fw-bold"><i class="fas fa-key me-2"></i> 尖東站系統密碼</h5>
+                            <button class="btn btn-light btn-custom fw-bold" style="color: var(--ets-color);" onclick="openStationPasswordModal('尖東站')"><i class="fas fa-plus"></i> 新增車站密碼</button>
+                        </div>
+                        <div class="row g-2" id="ets-station-passwords-container"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- ============ 常用電話簿 ============ -->
@@ -1260,6 +1302,36 @@
                 </div></div>
         </div>
 
+        <!-- Station Password Modal -->
+        <div class="modal fade" id="stationPasswordModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-warning text-dark"><h5 class="modal-title fw-bold"><i class="fas fa-key"></i> 新增/修改 車站系統密碼</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        <input type="hidden" id="spwd-id">
+                        <input type="hidden" id="spwd-order">
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <label class="form-label small fw-bold">車站</label>
+                                <select id="spwd-station" class="form-select form-select-sm">
+                                    <option value="尖東站">尖東站</option>
+                                    <option value="尖沙咀站">尖沙咀站</option>
+                                </select>
+                            </div>
+                            <div class="col-8">
+                                <label class="form-label small fw-bold">主要系統名稱</label>
+                                <input type="text" id="spwd-name" class="form-control form-control-sm" placeholder="輸入主要系統名稱">
+                            </div>
+                        </div>
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <label class="form-label small fw-bold mb-0">子名稱/地點、系統帳號及系統密碼 (最多 10 組)</label>
+                            <button type="button" class="btn btn-sm btn-outline-dark py-0 px-2 fw-bold" onclick="addStationPasswordInputRow()"><i class="fas fa-plus"></i> 新增</button>
+                        </div>
+                        <div id="spwd-inputs-container" class="d-flex flex-column gap-2 mb-2"></div>
+                    </div>
+                    <div class="modal-footer bg-light"><button type="button" class="btn btn-warning text-dark fw-bold px-4 rounded-pill" onclick="saveStationPassword()">儲存</button></div>
+                </div></div>
+        </div>
+
         <!-- Phonebook Modal -->
         <div class="modal fade" id="phoneModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow">
@@ -1617,6 +1689,7 @@
             dutyRecords: [],
             specialNotes: [],
             links: [],
+            stationPasswords: [],
             phonebook: [],
             meetings: [], 
             cbtItems: [],
@@ -1651,6 +1724,34 @@
         function getTodayStr() {
             let d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function getTwoYearsAgoDateStr() {
+            let d = new Date();
+            d.setFullYear(d.getFullYear() - 2);
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        let deletingExpiredIds = new Set();
+
+        function cleanupExpiredRecords(collectionName, records) {
+            let cutoffDateStr = getTwoYearsAgoDateStr();
+            let validRecords = [];
+            records.forEach(item => {
+                if (item.date && item.date < cutoffDateStr) {
+                    let key = `${collectionName}_${item.id}`;
+                    if (item.id && !deletingExpiredIds.has(key)) {
+                        deletingExpiredIds.add(key);
+                        db.collection(collectionName).doc(item.id).delete().catch(err => {
+                            console.error(`Auto-delete expired ${collectionName} error:`, err);
+                            deletingExpiredIds.delete(key);
+                        });
+                    }
+                } else {
+                    validRecords.push(item);
+                }
+            });
+            return validRecords;
         }
 
         function getLogicalDateStr() {
@@ -1753,6 +1854,7 @@
                 calDetail: new bootstrap.Modal(document.getElementById('calDetailModal')),
                 special: new bootstrap.Modal(document.getElementById('specialModal')),
                 link: new bootstrap.Modal(document.getElementById('linkModal')),
+                stationPassword: new bootstrap.Modal(document.getElementById('stationPasswordModal')),
                 phone: new bootstrap.Modal(document.getElementById('phoneModal')),
                 meeting: new bootstrap.Modal(document.getElementById('meetingModal')),
                 meetingDay: new bootstrap.Modal(document.getElementById('meetingDayModal')),
@@ -1820,8 +1922,9 @@
                     'faultLocation').set({ items: defaultSetupFaultLocation, isRequired: false }); });
 
             db.collection("handovers").onSnapshot(snap => {
-                localData.handovers = snap.docs.map(doc => { let d = doc.data();
+                let rawHandovers = snap.docs.map(doc => { let d = doc.data();
                     d.id = doc.id; return d; });
+                localData.handovers = cleanupExpiredRecords("handovers", rawHandovers);
                 renderAll();
                 if (document.getElementById('calDetailModal').classList.contains('show')) {
                     renderHandover(document.getElementById('calDetailHiddenDate').value, true);
@@ -1830,9 +1933,12 @@
             db.collection("notes").onSnapshot(snap => { localData.notes = snap.docs.map(doc => { let d = doc.data();
                     d.id = doc.id; return d; });
                 renderAll(); });
-            db.collection("faults").onSnapshot(snap => { localData.faults = snap.docs.map(doc => { let d = doc.data();
+            db.collection("faults").onSnapshot(snap => {
+                let rawFaults = snap.docs.map(doc => { let d = doc.data();
                     d.id = doc.id; return d; });
-                renderAll(); });
+                localData.faults = cleanupExpiredRecords("faults", rawFaults);
+                renderAll();
+            });
             db.collection("dutyRecords").onSnapshot(snap => { localData.dutyRecords = snap.docs.map(doc => doc.data());
                 renderAll(); });
             db.collection("specialNotes").onSnapshot(snap => { localData.specialNotes = snap.docs.map(doc => { let d =
@@ -1842,6 +1948,9 @@
             db.collection("links").onSnapshot(snap => { localData.links = snap.docs.map(doc => { let d = doc.data();
                     d.id = doc.id; return d; });
                 renderLinks(); });
+            db.collection("stationPasswords").onSnapshot(snap => { localData.stationPasswords = snap.docs.map(doc => { let d = doc.data();
+                    d.id = doc.id; return d; });
+                renderStationPasswords(); });
             db.collection("phonebook").onSnapshot(snap => { localData.phonebook = snap.docs.map(doc => { let d = doc
                         .data();
                     d.id = doc.id; return d; });
@@ -1943,6 +2052,8 @@
             if (actualToday !== currentViewingDateStr) {
                 currentViewingDateStr = actualToday;
                 displayMonthDate = new Date();
+                localData.handovers = cleanupExpiredRecords("handovers", localData.handovers);
+                localData.faults = cleanupExpiredRecords("faults", localData.faults);
                 let d = new Date();
                 // 若跨日，我們重設預設的日期搜尋器 (模仿舊版換月自動更新)
                 let y = d.getFullYear();
@@ -1988,6 +2099,7 @@
             renderFaults();
             renderMeetings();
             renderLinks();
+            renderStationPasswords();
             renderPhonebook();
             renderSetupTo();
             renderSetupDuty();
@@ -3411,6 +3523,138 @@
                 '<div class="col-12 text-center text-muted py-4"><i class="fas fa-link fa-2x mb-2 opacity-50"></i><br>尚未新增任何 Useful Link</div>';
         }
 
+        // ---------- 車站系統密碼 ----------
+        let currentPasswordStationSubTab = '尖沙咀站';
+
+        function setActivePasswordStation(stationName) {
+            currentPasswordStationSubTab = stationName;
+            let tstBtn = document.getElementById('subtab-btn-tst');
+            let etsBtn = document.getElementById('subtab-btn-ets');
+            if (tstBtn && etsBtn) {
+                if (stationName === '尖沙咀站') {
+                    tstBtn.style.opacity = '1';
+                     tstBtn.style.boxShadow = '0 4px 10px rgba(226, 35, 26, 0.35)';
+                    etsBtn.style.opacity = '0.65';
+                    etsBtn.style.boxShadow = 'none';
+                } else {
+                    etsBtn.style.opacity = '1';
+                    etsBtn.style.boxShadow = '0 4px 10px rgba(143, 48, 20, 0.35)';
+                    tstBtn.style.opacity = '0.65';
+                    tstBtn.style.boxShadow = 'none';
+                }
+            }
+        }
+
+        function openStationPasswordModal(stationName) {
+            currentPasswordStationSubTab = stationName || currentPasswordStationSubTab || '尖沙咀站';
+            openModal('stationPasswordModal');
+            document.getElementById('spwd-station').value = currentPasswordStationSubTab;
+        }
+
+        function moveStationPassword(id, direction, isTSTStation) {
+            localData.stationPasswords.forEach((item, index) => { if (item.order === undefined) item.order = Date.now() + index; });
+            let arr = localData.stationPasswords.filter(item => {
+                let itemIsTST = (item.station === '尖沙咀站' || item.station === 'TST');
+                return itemIsTST === isTSTStation;
+            }).sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            let index = arr.findIndex(n => n.id === id);
+            if (index < 0) return;
+            let newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= arr.length) return;
+            let currentItem = arr[index];
+            let swapItem = arr[newIndex];
+            if (currentItem.order === swapItem.order) {
+                currentItem.order = Date.now() + index;
+                swapItem.order = Date.now() + newIndex;
+            }
+            let tempOrder = currentItem.order;
+            currentItem.order = swapItem.order;
+            swapItem.order = tempOrder;
+            db.collection('stationPasswords').doc(currentItem.id).update({ order: currentItem.order });
+            db.collection('stationPasswords').doc(swapItem.id).update({ order: swapItem.order });
+        }
+
+        function renderStationPasswords() {
+            let tstContainer = document.getElementById('tst-station-passwords-container');
+            let etsContainer = document.getElementById('ets-station-passwords-container');
+            if (!tstContainer || !etsContainer) return;
+
+            let filtered = [...localData.stationPasswords].sort((a, b) => (a.order || 0) - (b.order || 0));
+            let tstHtml = '';
+            let etsHtml = '';
+
+            filtered.forEach((item) => {
+                let isTST = (item.station === '尖沙咀站' || item.station === 'TST');
+                let stationLabel = isTST ? '尖沙咀站' : '尖東站';
+                let stationColor = isTST ? 'var(--tst-color)' : 'var(--ets-color)';
+                let credentials = (item.credentials && item.credentials.length > 0)
+                    ? item.credentials
+                    : ((item.account || item.password) ? [{ subName: '', account: item.account || '', password: item.password || '' }] : []);
+
+                let credsHtml = '';
+                credentials.forEach((cred, idx) => {
+                    let encodedAccount = encodeURIComponent(cred.account || '').replace(/'/g, "%27");
+                    let encodedPassword = encodeURIComponent(cred.password || '').replace(/'/g, "%27");
+                    let subHeader = cred.subName
+                        ? `<div class="fw-bold text-dark border-bottom pb-1 mb-1 text-truncate" style="font-size: 0.76rem;" title="${cred.subName}"><i class="fas fa-map-marker-alt text-secondary me-1"></i>${cred.subName}</div>`
+                        : (credentials.length > 1 ? `<div class="fw-bold text-secondary mb-1" style="font-size: 0.72rem;">#${idx + 1}</div>` : '');
+                    credsHtml += `
+                    <div class="p-1 px-2 rounded bg-light border mb-1" style="font-size: 0.78rem;">
+                        ${subHeader}
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="text-truncate me-1">
+                                <span class="text-muted">帳:</span>
+                                <span class="fw-bold text-dark" style="font-family: monospace;">${cred.account || '-'}</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary py-0 px-1 flex-shrink-0" style="font-size: 0.7rem; line-height: 1.3;" onclick="copyLogContent('${encodedAccount}', this)" title="複製系統帳號">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-truncate me-1">
+                                <span class="text-muted">密:</span>
+                                <span class="fw-bold text-danger" style="font-family: monospace;">${cred.password || '-'}</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-success py-0 px-1 flex-shrink-0" style="font-size: 0.7rem; line-height: 1.3;" onclick="copyLogContent('${encodedPassword}', this)" title="複製系統密碼">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>`;
+                });
+
+                let cardHtml = `
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <div class="card h-100 interactive-card border-0 shadow-sm" style="border-left: 4px solid ${stationColor} !important; cursor: default;">
+                        <div class="card-header text-white fw-bold d-flex justify-content-between align-items-center py-1 px-2 border-0" style="background-color: ${stationColor}; font-size: 0.82rem;">
+                            <span class="badge bg-white text-dark shadow-sm" style="font-size: 0.68rem; padding: 2px 5px;">${stationLabel}</span>
+                            <span class="text-truncate ms-1" title="${item.name || ''}">${item.name || ''}</span>
+                        </div>
+                        <div class="card-body p-2">
+                            ${credsHtml || '<div class="text-muted small text-center py-1" style="font-size: 0.75rem;">無帳號密碼</div>'}
+                        </div>
+                        <div class="card-footer bg-white border-0 text-end py-1 px-2 action-icons" onclick="event.stopPropagation();">
+                            <i class="fas fa-arrow-left text-secondary p-1" style="font-size: 0.85rem;" onclick="moveStationPassword('${item.id}', -1, ${isTST})" title="前移"></i>
+                            <i class="fas fa-arrow-right text-secondary p-1 me-1" style="font-size: 0.85rem;" onclick="moveStationPassword('${item.id}', 1, ${isTST})" title="後移"></i>
+                            <i class="fas fa-edit p-1 text-primary" style="font-size: 0.85rem;" onclick="editStationPassword('${item.id}')" title="修改"></i>
+                            <i class="fas fa-trash p-1 text-danger" style="font-size: 0.85rem;" onclick="deleteItem('stationPasswords', '${item.id}')" title="刪除"></i>
+                        </div>
+                    </div>
+                </div>`;
+
+                if (isTST) {
+                    tstHtml += cardHtml;
+                } else {
+                    etsHtml += cardHtml;
+                }
+            });
+
+            tstContainer.innerHTML = tstHtml ||
+                '<div class="col-12 text-center text-muted py-4 bg-white rounded shadow-sm"><i class="fas fa-key fa-2x mb-2 opacity-50"></i><br>尚未新增任何尖沙咀站系統密碼</div>';
+            etsContainer.innerHTML = etsHtml ||
+                '<div class="col-12 text-center text-muted py-4 bg-white rounded shadow-sm"><i class="fas fa-key fa-2x mb-2 opacity-50"></i><br>尚未新增任何尖東站系統密碼</div>';
+        }
+
         // ---------- Phonebook ----------
         function renderPhonebook() {
             let container = document.getElementById('phonebook-container');
@@ -3688,6 +3932,13 @@
                 document.getElementById('link-url').value = '';
                 document.getElementById('link-icon').value = 'fas fa-link';
                 document.getElementById('link-color').value = 'primary';
+            } else if (modalId === 'stationPasswordModal') {
+                document.getElementById('spwd-id').value = '';
+                document.getElementById('spwd-order').value = Date.now();
+                document.getElementById('spwd-station').value = currentPasswordStationSubTab || '尖沙咀站';
+                document.getElementById('spwd-name').value = '';
+                document.getElementById('spwd-inputs-container').innerHTML = '';
+                addStationPasswordInputRow();
             } else if (modalId === 'phoneModal') {
                 document.getElementById('pb-id').value = '';
                 document.getElementById('pb-order').value = Date.now();
@@ -4079,6 +4330,77 @@
             }
         }
 
+        // ---------- Save Station Password ----------
+        function addStationPasswordInputRow(subName = '', account = '', password = '') {
+            let container = document.getElementById('spwd-inputs-container');
+            if (container.children.length >= 10) { alert('最多只可新增 10 組系統帳號及密碼！'); return; }
+            let div = document.createElement('div');
+            div.className = 'd-flex gap-2 mb-1 spwd-row align-items-center';
+            div.innerHTML = `
+                <input type="text" class="form-control form-control-sm spwd-sub" style="flex: 0 0 30%;" placeholder="子名稱/地點 (可選)">
+                <input type="text" class="form-control form-control-sm spwd-acc" style="flex: 1;" placeholder="系統帳號">
+                <input type="text" class="form-control form-control-sm spwd-pwd" style="flex: 1;" placeholder="系統密碼">
+                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 flex-shrink-0" onclick="this.parentElement.remove()" title="刪除此組"><i class="fas fa-trash"></i></button>
+            `;
+            div.querySelector('.spwd-sub').value = subName || '';
+            div.querySelector('.spwd-acc').value = account || '';
+            div.querySelector('.spwd-pwd').value = password || '';
+            container.appendChild(div);
+        }
+
+        function saveStationPassword() {
+            let id = document.getElementById('spwd-id').value || generateId();
+            let station = document.getElementById('spwd-station').value;
+            let name = document.getElementById('spwd-name').value.trim();
+            if (!name) {
+                alert("請輸入系統名稱！");
+                return;
+            }
+            let credentials = [];
+            document.querySelectorAll('.spwd-row').forEach(row => {
+                let sub = row.querySelector('.spwd-sub').value.trim();
+                let acc = row.querySelector('.spwd-acc').value.trim();
+                let pwd = row.querySelector('.spwd-pwd').value.trim();
+                if (sub || acc || pwd) credentials.push({ subName: sub, account: acc, password: pwd });
+            });
+            let item = {
+                id: id,
+                order: parseInt(document.getElementById('spwd-order').value) || Date.now(),
+                station: station,
+                name: name,
+                credentials: credentials,
+                account: credentials[0] ? credentials[0].account : '',
+                password: credentials[0] ? credentials[0].password : ''
+            };
+            db.collection('stationPasswords').doc(id).set(item).then(() => {
+                modals.stationPassword.hide();
+                let targetBtn = document.getElementById(station === "尖沙咀站" ? "subtab-btn-tst" : "subtab-btn-ets");
+                if (targetBtn) targetBtn.click();
+            });
+        }
+
+        function editStationPassword(id) {
+            let item = localData.stationPasswords.find(i => i.id === id);
+            if (item) {
+                document.getElementById('spwd-id').value = item.id;
+                document.getElementById('spwd-order').value = item.order || Date.now();
+                let isTST = (item.station === '尖沙咀站' || item.station === 'TST');
+                document.getElementById('spwd-station').value = isTST ? '尖沙咀站' : '尖東站';
+                document.getElementById('spwd-name').value = item.name || '';
+                let container = document.getElementById('spwd-inputs-container');
+                container.innerHTML = '';
+                let credentials = (item.credentials && item.credentials.length > 0)
+                    ? item.credentials
+                    : ((item.account || item.password) ? [{ subName: '', account: item.account || '', password: item.password || '' }] : []);
+                if (credentials.length > 0) {
+                    credentials.forEach(c => addStationPasswordInputRow(c.subName || '', c.account || '', c.password || ''));
+                } else {
+                    addStationPasswordInputRow();
+                }
+                modals.stationPassword.show();
+            }
+        }
+
         // ---------- Save Phonebook ----------
         function savePhonebook() {
             let id = document.getElementById('pb-id').value || generateId();
@@ -4180,6 +4502,17 @@
         // ============================================================
         //  11. Data Setup Functions
         // ============================================================
+        function checkPasswordAndGoToStationPassword(e) {
+            e.preventDefault();
+            let pwd = prompt("請輸入密碼以進入 車站系統密碼:");
+            if (pwd === "123456") {
+                let tab = new bootstrap.Tab(document.getElementById('password-tab-link'));
+                tab.show();
+            } else if (pwd !== null) {
+                alert("密碼錯誤！");
+            }
+        }
+
         function checkPasswordAndGoToSetup(e) {
             e.preventDefault();
             let pwd = prompt("請輸入密碼以進入 Data Setup:");
